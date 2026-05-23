@@ -1,119 +1,160 @@
 # Vertex Monitor
 
-Vertex AI Gemini 预算代理 — 实时计费 + Web UI 仪表盘，支持**手动余额 & 自动循环**两种模式。
+[中文文档](README.zh-CN.md) | English
+
+A lightweight **budget proxy** for Google Vertex AI Gemini models — track spending in real time, enforce hard limits, and manage everything from a clean Web UI.
+
+> 🎯 Built for Google AI Pro subscribers who get monthly Vertex AI credits and need to **make sure they never go over budget**.
 
 ---
 
-## 核心能力
+## Why Vertex Monitor?
 
-| 功能 | 说明 |
-|------|------|
-| 🔒 **实时计费** | liteLLM 自动匹配 Vertex AI 官方定价，每次调用精确到 $0.00001 |
-| ✋ **手动模式** | 自由设定余额 & 截止日期，随时修改 |
-| 🔄 **自动循环** | 设定每月重置日 & 金额，自动归零 spent |
-| 📊 **Web UI** | 余额概览 + 模式设置 + 模型消费分布 + 调用历史 |
-| 🛑 **硬拦截** | 额度耗尽 / 过期即时返回 402 |
-| 🔌 **Hermes 接入** | OpenAI 兼容端点，一行配置即可接入 |
-| 🐳 **Docker** | 一键部署，数据卷持久化 |
+**The problem**: Vertex AI charges per token, and there's no built-in way to say *"stop when I've spent $10 this month."* One runaway agent loop can burn through your entire budget.
+
+**The solution**: Vertex Monitor sits between your apps and Vertex AI, counting every token and dollar. When the budget is gone, requests get a `402 Payment Required` — no surprises on your GCP bill.
 
 ---
 
-## 快速开始
+## Features
 
-### Conda 方式
+| Feature | Description |
+|---------|-------------|
+| 🪙 **Real-time Billing** | Costs calculated per-call using official Vertex AI pricing (via liteLLM), accurate to $0.00001 |
+| ✋ **Manual Mode** | Set a balance and expiry date, adjust anytime |
+| 🔄 **Auto Recurring** | Monthly reset day + amount — perfect for subscription credits |
+| 📊 **Web Dashboard** | Balance overview, cost breakdown charts, model stats, call history |
+| ⚙️ **Settings Page** | Manage credentials, model allowlist, billing mode — all from the browser |
+| 🌐 **i18n** | English + 简体中文, persisted in localStorage, zero flicker |
+| 🛑 **Hard Limit** | Budget exhausted → instant `402`, no overflow |
+| 🔌 **OpenAI Compatible** | Drop-in endpoint for Hermes, Cursor, or any OpenAI-compatible client |
+| 🐳 **Docker** | One-command deploy, data volume for persistence |
+
+---
+
+## Quick Start
+
+### Option 1: Docker (Recommended)
+
+```bash
+# Clone the repo
+git clone https://github.com/colin-chang/VertexMonitor.git
+cd VertexMonitor
+
+# Copy example config and edit with your GCP project ID
+cp config.example.json config.json
+
+# Place your service account key
+cp ~/Downloads/your-key.json vertex-key.json
+
+# Start
+docker compose up -d
+```
+
+Open http://localhost:8899 — you're up and running.
+
+### Option 2: Conda
 
 ```bash
 conda create -n vertex-monitor python=3.11 -y
 conda activate vertex-monitor
 pip install -r requirements.txt
+
+cp config.example.json config.json
+# Edit config.json with your GCP project ID
+# Place vertex-key.json in project root
+
 python proxy.py
 ```
-
-### Docker 方式
-
-```bash
-docker compose up -d
-```
-
-启动后打开 <http://localhost:8899> 进入 Web UI。
 
 ---
 
 ## Web UI
 
-Web UI 提供三个核心面板：
+### Dashboard
 
-### 1. 本期概览
-实时显示剩余额度、已消费、总预算、截止时间、状态徽章。
+The main view shows everything at a glance:
 
-### 2. 计费模式设置
-- **自动循环**：设置每月重置日 + 每月金额（如每月 1 号重置 $10）
-- **手动设定**：自由设置余额 + 截止日期，随时修改
-- **立即重置**按钮：手动归零本期消费
+- **Balance overview**: remaining, spent, budget, expiry, status badge
+- **Cost chart**: donut chart showing spending by model
+- **Token chart**: stacked bar chart of prompt vs. completion tokens
+- **Model stats table**: calls, tokens, and cost per model
+- **Recent calls**: the last 20 API requests with full details
+- **Lifetime stats**: total spending and calls across all time
 
-### 3. 消费统计
-- **模型消费分布**：每个模型的调用次数、token 用量、消费金额
-- **最近调用**：最近 20 条调用详单
-- **累计统计**：历史总消费 & 总调用次数
+### Settings
 
----
+Manage your proxy configuration without touching files:
 
-## 接入前：查询当前消费
-
-见下方「余额校正」——先查 GCP Billing 确认接入前的消费额，再通过 Web UI 调整。
-
-### 方式一：GCP Billing Console（推荐）
-
-1. <https://console.cloud.google.com/billing> → 报告
-2. 筛选：本月至今 / SKU / Vertex AI
-3. 查看总费用
-
-### 方式二：开发者福利页面
-
-<https://developers.google.com/program/my-benefits>
+- **Vertex AI Credentials**: paste your service account JSON key, status indicator shows if configured
+- **Allowed Models**: one model per line — only these can be called through the proxy
+- **Billing Mode**: switch between Auto Recurring (monthly reset) and Manual (custom balance + expiry)
+- **Test Connectivity**: send a minimal request to verify everything works
 
 ---
 
-## API
+## Getting a GCP Service Account Key
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| `GET` | `/` | Web UI |
-| `GET` | `/health` | 健康检查 + 模型列表 |
-| `POST` | `/api/test` | 连通性测试（发送最小请求） |
-| `GET` | `/usage` | 预算状态摘要 |
-| `GET` | `/api/config` | 计费配置 + 完整状态 |
-| `POST` | `/api/config` | 更新计费配置 |
-| `POST` | `/api/reset` | 手动重置本期消费 |
-| `GET` | `/api/stats` | 模型消费统计 |
-| `GET` | `/api/history` | 最近 N 条调用历史 |
-| `POST` | `/v1/chat/completions` | OpenAI 兼容聊天补全 |
+Vertex Monitor needs a GCP service account JSON key to call the Vertex AI API.
 
-### 更新计费配置
+1. Open [GCP Console → Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts)
+2. Select your project
+3. Click **Create Service Account**
+   - Role: **Vertex AI User** (`roles/aiplatform.user`)
+4. Go to the account → **Keys** tab → **Add Key** → **Create New Key**
+5. Choose **JSON** → download the file
+6. Rename it to `vertex-key.json` and place it in the project root
+
+> ⚠️ `vertex-key.json` is excluded by `.gitignore` and will never be committed.
+
+---
+
+## API Reference
+
+### Proxy Endpoint
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/v1/chat/completions` | OpenAI-compatible chat completions (proxied to Vertex AI) |
+
+### Management Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/` | Dashboard page |
+| `GET` | `/settings` | Settings page |
+| `GET` | `/health` | Health check + model list |
+| `GET` | `/usage` | Budget status summary |
+| `GET` | `/api/config` | Billing configuration + full state |
+| `POST` | `/api/config` | Update billing configuration |
+| `POST` | `/api/reset` | Reset current period spending |
+| `GET` | `/api/stats` | Per-model cost statistics |
+| `GET` | `/api/history` | Recent API call history |
+| `GET` | `/api/settings` | Get credentials + model allowlist |
+| `POST` | `/api/settings` | Save credentials + model allowlist |
+| `POST` | `/api/test` | Test Vertex AI connectivity |
+
+### Update Billing Configuration
 
 ```bash
-# 切换为自动循环模式：每月 1 号重置 $10
+# Auto recurring: reset $10 on the 1st of each month
 curl -X POST http://localhost:8899/api/config \
   -H "Content-Type: application/json" \
   -d '{"mode":"auto_recurring","auto_reset_day":1,"auto_monthly_amount":10.0}'
 
-# 切换为手动模式：余额 $8.50，下月底到期
+# Manual mode: $8.50 balance, expires end of next month
 curl -X POST http://localhost:8899/api/config \
   -H "Content-Type: application/json" \
   -d '{"mode":"manual","manual_balance":8.50,"manual_expires_at":"2026-07-31"}'
 ```
 
-### 查询统计
-
-```bash
-curl -s http://localhost:8899/api/stats | python3 -m json.tool
-```
-
 ---
 
-## 接入 Hermes
+## Integration
 
-在 `~/.hermes/config.yaml` 的 `custom_providers` 中添加：
+### Hermes Agent
+
+Add to `~/.hermes/config.yaml`:
 
 ```yaml
 custom_providers:
@@ -128,17 +169,11 @@ custom_providers:
         context_length: 1048576
       gemini-3.1-pro-preview:
         context_length: 1048576
-      gemini-3.1-pro-preview-customtools:
-        context_length: 1048576
-      gemini-3-flash:
-        context_length: 1048576
       gemini-2.5-pro:
         context_length: 2097152
       gemini-2.5-flash:
         context_length: 1048576
       gemini-2.5-flash-lite:
-        context_length: 1048576
-      gemini-2.5-flash-live-api:
         context_length: 1048576
       gemini-2.0-flash:
         context_length: 1048576
@@ -150,80 +185,81 @@ custom_providers:
         context_length: 1048576
 ```
 
-`/model` 选中 `vertex-budget` 即可。在对话中可直接询问余额——Agent 调 `GET /usage` 获取。
+Select `vertex-budget` with `/model` and you're set.
+
+### Any OpenAI-Compatible Client
+
+Point your client's `base_url` to `http://localhost:8899/v1` with any non-empty API key.
 
 ---
 
-## 获取 GCP 服务账号 Key（vertex-key.json）
+## Supported Models
 
-项目需要 GCP **服务账号 JSON 密钥**才能调用 Vertex AI API。
-
-### 步骤
-
-1. 打开 [GCP Console → 服务账号](https://console.cloud.google.com/iam-admin/serviceaccounts)
-2. 选择你的项目（如 `ai-project-384207`）
-3. 点击 **"创建服务账号"**（或选择一个已有的）
-   - 角色选择：**Vertex AI User**（`roles/aiplatform.user`）
-4. 进入该服务账号 → **密钥** 标签 → **添加密钥** → **创建新密钥**
-5. 选择 **JSON** → 下载
-6. 将下载的文件重命名为 `vertex-key.json`，放入项目根目录
-
-### 已有账号直接下载密钥
-
-如果你已有服务账号：
-
-1. [IAM → 服务账号](https://console.cloud.google.com/iam-admin/serviceaccounts) → 找到账号
-2. 点击账号邮箱 → **密钥** → **添加密钥** → **创建新密钥** → JSON
-
-> ⚠️ `vertex-key.json` 已加入 `.gitignore`，不会被提交到 Git。
+| Model | Context Length | Status |
+|-------|---------------|--------|
+| `gemini-3.5-flash` | 1,048,576 | Recommended |
+| `gemini-3.1-flash-lite` | 1,048,576 | Recommended |
+| `gemini-3.1-pro-preview` | 1,048,576 | Preview |
+| `gemini-3.1-pro-preview-customtools` | 1,048,576 | Preview |
+| `gemini-3-flash` | 1,048,576 | Preview |
+| `gemini-2.5-pro` | 2,097,152 | Stable |
+| `gemini-2.5-flash` | 1,048,576 | Stable |
+| `gemini-2.5-flash-lite` | 1,048,576 | Stable |
+| `gemini-2.5-flash-live-api` | 1,048,576 | Stable |
+| `gemini-2.0-flash` | 1,048,576 | Legacy |
+| `gemini-2.0-flash-lite` | 1,048,576 | Legacy |
+| `gemini-1.5-pro` | 2,097,152 | Legacy |
+| `gemini-1.5-flash` | 1,048,576 | Legacy |
 
 ---
 
-## Docker 部署
+## Docker Commands
 
 ```bash
-docker compose up -d        # 启动
-docker compose logs -f      # 日志
-docker compose down         # 停止
+docker compose up -d        # Start
+docker compose logs -f      # View logs
+docker compose down         # Stop
 ```
 
-数据持久化在 `./data/`（store.json + store_history.jsonl）。Web UI 端口 8899。
+Data persists in `./data/` (mounted as a Docker volume). Port 8899.
 
 ---
 
-## 支持模型
-
-| 模型 | context_length | 状态 |
-|------|---------------|------|
-| `gemini-3.5-flash` | 1,048,576 | 推荐 |
-| `gemini-3.1-flash-lite` | 1,048,576 | 推荐 |
-| `gemini-3.1-pro-preview` | 1,048,576 | 预览 |
-| `gemini-3.1-pro-preview-customtools` | 1,048,576 | 预览 |
-| `gemini-3-flash` | 1,048,576 | 预览 |
-| `gemini-2.5-pro` | 2,097,152 | 稳定 |
-| `gemini-2.5-flash` | 1,048,576 | 稳定 |
-| `gemini-2.5-flash-lite` | 1,048,576 | 稳定 |
-| `gemini-2.5-flash-live-api` | 1,048,576 | 稳定 |
-| `gemini-2.0-flash` | 1,048,576 | 旧版 |
-| `gemini-2.0-flash-lite` | 1,048,576 | 旧版 |
-| `gemini-1.5-pro` | 2,097,152 | 旧版 |
-| `gemini-1.5-flash` | 1,048,576 | 旧版 |
-
----
-
-## 文件结构
+## Project Structure
 
 ```
 VertexMonitor/
-├── proxy.py               # FastAPI 代理
-├── store.py               # 双模式计费 + 统计
-├── static/index.html      # Web UI
-├── config.json            # 项目配置
-├── requirements.txt       # Python 依赖
+├── proxy.py                  # FastAPI proxy + API endpoints
+├── store.py                  # Billing engine (dual-mode) + statistics
+├── static/
+│   ├── index.html            # Dashboard page
+│   ├── settings.html         # Settings page
+│   └── i18n.js               # Translation engine (EN / zh-CN)
+├── config.example.json       # Example configuration (copy to config.json)
+├── requirements.txt          # Python dependencies
 ├── Dockerfile
 ├── docker-compose.yml
-├── vertex-key.json         # GCP 服务账号密钥（需自行下载）
-├── .dockerignore / .gitignore
-├── data/                  # 持久化数据
+├── .gitignore
+├── .dockerignore
+├── LICENSE                   # MIT
+├── SECURITY.md
+├── PRIVACY.md
+├── data/                     # Runtime data (git-ignored)
+│   └── .gitkeep
 └── README.md
 ```
+
+---
+
+## Security & Privacy
+
+- **Credentials** are stored only inside the Docker container (`/app/data/`), never in Git
+- **No telemetry** — your data stays on your machine
+- **No external services** — the only outbound traffic is your own API calls to Google Vertex AI
+- See [SECURITY.md](SECURITY.md) and [PRIVACY.md](PRIVACY.md) for details
+
+---
+
+## License
+
+[MIT](LICENSE) © 2025 Colin Chang

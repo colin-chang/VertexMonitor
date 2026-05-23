@@ -1,7 +1,7 @@
 // Vertex Monitor i18n — English (default) + 简体中文
 (function() {
-  const LANG_KEY = 'vm_lang';
-  const messages = {
+  var LANG_KEY = 'vm_lang';
+  var messages = {
     en: {
       // Nav
       nav_title: 'Vertex Monitor',
@@ -216,39 +216,50 @@
     }
   };
 
+  // ── Core ──
+  function getLang() {
+    return localStorage.getItem(LANG_KEY) || 'en';
+  }
+
+  function t(key) {
+    var lang = getLang();
+    return (messages[lang] && messages[lang][key]) || messages.en[key] || key;
+  }
+
+  function applyEl(el) {
+    var key = el.getAttribute('data-i18n');
+    if (!key) return;
+    var text = t(key);
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      if (el.type === 'submit' || el.type === 'button') {
+        el.value = text;
+      } else {
+        el.setAttribute('placeholder', text);
+      }
+    } else if (el.tagName === 'TITLE') {
+      document.title = text;
+    } else {
+      el.textContent = text;
+    }
+  }
+
+  // ── Apply all existing data-i18n elements ──
+  function applyAll() {
+    var els = document.querySelectorAll('[data-i18n]');
+    for (var i = 0; i < els.length; i++) applyEl(els[i]);
+  }
+
   // ── Public API ──
   window.i18n = {
-    getLang: function() {
-      return localStorage.getItem(LANG_KEY) || 'en';
-    },
+    getLang: getLang,
     setLang: function(lang) {
       localStorage.setItem(LANG_KEY, lang);
       location.reload();
     },
-    t: function(key) {
-      const lang = this.getLang();
-      return (messages[lang] && messages[lang][key]) || messages.en[key] || key;
-    },
+    t: t,
+    applyEl: applyEl,
+    applyAll: applyAll,
     langs: ['en', 'zh-CN'],
     langLabels: { en: 'English', 'zh-CN': '简体中文' },
   };
-
-  // ── Apply data-i18n attributes on DOM ready ──
-  document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('[data-i18n]').forEach(function(el) {
-      const key = el.getAttribute('data-i18n');
-      const text = window.i18n.t(key);
-      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-        if (el.type === 'submit' || el.type === 'button') {
-          el.value = text;
-        } else {
-          el.setAttribute('placeholder', text);
-        }
-      } else if (el.tagName === 'TITLE') {
-        document.title = text;
-      } else {
-        el.textContent = text;
-      }
-    });
-  });
 })();

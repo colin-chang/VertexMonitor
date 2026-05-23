@@ -26,6 +26,8 @@ Thumbs.db
 
 # ── Vertex Monitor 敏感文件 ──
 vertex-key.json
+vertex-key.json/
+config.json
 *.log
 
 # ── 运行时数据（保留目录结构，忽略内容） ──
