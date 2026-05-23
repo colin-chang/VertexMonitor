@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+data/
+store.json
+store_history.jsonl
+budget.json
+budget_history.jsonl
+.git/
+.gitignore
+README.md
+environment.yml
+test_vertex.py

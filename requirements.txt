@@ -1,0 +1,4 @@
+google-cloud-aiplatform
+litellm
+fastapi
+uvicorn[standard]

@@ -1,0 +1,33 @@
+# ── Python ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── 虚拟环境 ──
+venv/
+.venv/
+env/
+.env
+
+# ── IDE / 编辑器 ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── 操作系统 ──
+.DS_Store
+Thumbs.db
+
+# ── Vertex Monitor 敏感文件 ──
+vertex-key.json
+*.log
+
+# ── 运行时数据（保留目录结构，忽略内容） ──
+data/*
+!data/.gitkeep
