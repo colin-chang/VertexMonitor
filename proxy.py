@@ -2,23 +2,25 @@
 Vertex Monitor — 预算代理服务（v3）
 OpenAI 兼容端点 + liteLLM 计费 + 双模式预算 + Web UI
 
-启动: python proxy.py    |   端口: 8899
-Web UI: http://localhost:8899
+启动: python proxy.py    |   端口: 8897
+Web UI: http://localhost:8897
 """
 from __future__ import annotations
 
 import json
+import logging
 import os
 from pathlib import Path
-from typing import Optional
 
 import litellm
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse, HTMLResponse, FileResponse, StreamingResponse
+from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from store import load_store, save_store, record_call
+
+logger = logging.getLogger("vertex-monitor")
 
 # ── 配置加载 ──────────────────────────────────────────────
 _data_dir = Path(__file__).parent / "data"
@@ -200,10 +202,11 @@ async def reset_now():
 async def get_stats():
     """获取模型消费统计。"""
     store = load_store()
+    s = store.summary()
     return JSONResponse({
-        "models": store.summary()["models"],
-        "lifetime": store.summary()["lifetime"],
-        "period": store.summary()["period"],
+        "models": s["models"],
+        "lifetime": s["lifetime"],
+        "period": s["period"],
     })
 
 
@@ -233,9 +236,8 @@ async def get_settings():
     creds_path = _data_dir / cfg.get("google_application_credentials", "vertex-key.json")
     has_key = creds_path.exists() and creds_path.stat().st_size > 0
 
-    # 读取 key 文件内容
-    key_content = ""
     key_preview = ""
+    key_content = ""
     if has_key:
         try:
             raw = creds_path.read_text(encoding="utf-8").strip()
@@ -243,7 +245,7 @@ async def get_settings():
             key_preview = f"{key_data.get('project_id', '?')} / {key_data.get('client_email', '?')}"
             key_content = raw
         except Exception:
-            key_preview = "已配置（无法解析）"
+            key_preview = "Configured (unreadable)"
 
     return JSONResponse({
         "vertex_project": cfg.get("vertex_project", _DEFAULT_SETTINGS["vertex_project"]),
@@ -288,13 +290,19 @@ async def update_settings(request: Request):
                 detail={"error": "invalid_key_json", "message": "Vertex Key 内容不是有效的 JSON"},
             )
         # 验证必要字段
-        if "private_key" not in key_data and "client_email" not in key_data:
+        if "private_key" not in key_data or "client_email" not in key_data:
             raise HTTPException(
                 status_code=400,
                 detail={"error": "missing_key_fields", "message": "JSON 缺少必要字段（private_key / client_email）"},
             )
 
         creds_path = _data_dir / cfg.get("google_application_credentials", "vertex-key.json")
+        # 防止路径穿越：确认解析后的路径在 _data_dir 内
+        if not creds_path.resolve().is_relative_to(_data_dir.resolve()):
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "invalid_credentials_path", "message": "凭证文件路径不合法"},
+            )
         creds_path.write_text(key_str, encoding="utf-8")
 
         # 更新环境变量
@@ -386,7 +394,7 @@ async def chat_completions(request: Request):
                 "message": "余额已耗尽" if not store.expired else "余额已过期",
                 "spent": round(store.spent, 6),
                 "remaining": round(store.remaining, 6),
-                "balance": round(store._current_balance, 6),
+                "balance": round(store.current_balance, 6),
                 "mode": store.billing.mode,
             },
         )
@@ -424,6 +432,7 @@ async def chat_completions(request: Request):
     try:
         cost = litellm.completion_cost(completion_response=response)
     except Exception:
+        logger.warning("completion_cost failed, recording cost as 0", exc_info=True)
         cost = 0.0
 
     # 序列化响应 — 使用 liteLLM 原生 OpenAI 格式，仅追加 _budget
@@ -518,17 +527,22 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
 
+@app.exception_handler(json.JSONDecodeError)
+async def json_decode_handler(request: Request, exc: json.JSONDecodeError):
+    return JSONResponse(status_code=400, content={"detail": "Invalid JSON body"})
+
+
 # ── 入口 ──────────────────────────────────────────────────
 
 if __name__ == "__main__":
     host = os.environ.get("HOST", "127.0.0.1")
-    port = int(os.environ.get("PORT", 8899))
+    port = int(os.environ.get("PORT", 8897))
     store = load_store()
     store.check_and_reset()
     save_store(store)
     print(f"🔒 Vertex Monitor v3 启动 → http://localhost:{port}")
     print(f"   Web UI: http://localhost:{port}")
     print(f"   模式: {'手动' if store.billing.is_manual else '自动循环'}")
-    print(f"   余额: ${store.remaining:.2f} / ${store._current_balance:.2f}")
+    print(f"   余额: ${store.remaining:.2f} / ${store.current_balance:.2f}")
     print(f"   模型: {', '.join(sorted(ALLOWED_MODELS))}")
     uvicorn.run(app, host=host, port=port, log_level="info")

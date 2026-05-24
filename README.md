@@ -24,11 +24,12 @@ A lightweight **budget proxy** for Google Vertex AI Gemini models — track spen
 | ✋ **Manual Mode** | Set a balance and expiry date, adjust anytime |
 | 🔄 **Auto Recurring** | Monthly reset day + amount — perfect for subscription credits |
 | 📊 **Web Dashboard** | Balance overview, cost breakdown charts, model stats, call history |
-| ⚙️ **Settings Page** | Manage credentials, model allowlist, billing mode — all from the browser |
+| ⚙️ **Settings Page** | Manage credentials, Vertex config, model allowlist, billing mode — all from the browser |
+| 🤖 **Agent Integration** | Built-in Skill API + Agent help modal, AI assistants can query balance and models directly |
 | 🌐 **i18n** | English + 简体中文, persisted in localStorage, zero flicker |
 | 🛑 **Hard Limit** | Budget exhausted → instant `402`, no overflow |
-| 🔌 **OpenAI Compatible** | Drop-in endpoint for Hermes, Cursor, or any OpenAI-compatible client |
-| 🐳 **Docker** | One-command deploy, data volume for persistence |
+| 🔌 **OpenAI Compatible** | Supports both SSE streaming and non-streaming, drop-in endpoint for Hermes, Cursor, or any OpenAI-compatible client |
+| 🐳 **Docker** | One-command deploy, non-root user, built-in health check, data volume for persistence |
 
 ---
 
@@ -51,7 +52,7 @@ cp ~/Downloads/your-key.json vertex-key.json
 docker compose up -d
 ```
 
-Open http://localhost:8899 — you're up and running.
+Open <http://localhost:8897> — you're up and running.
 
 ### Option 2: Conda
 
@@ -71,25 +72,44 @@ python proxy.py
 
 ## Web UI
 
-### Dashboard
+The top-right navigation menu provides access to three pages:
+
+### 📊 Dashboard
+
+![Dashboard](docs/screenshots/dashboard.webp)
 
 The main view shows everything at a glance:
 
-- **Balance overview**: remaining, spent, budget, expiry, status badge
+- **Balance overview**: remaining, spent, budget, expiry, status badge (🟢 healthy / 🟡 warning / 🔴 exhausted)
 - **Cost chart**: donut chart showing spending by model
 - **Token chart**: stacked bar chart of prompt vs. completion tokens
 - **Model stats table**: calls, tokens, and cost per model
 - **Recent calls**: the last 20 API requests with full details
 - **Lifetime stats**: total spending and calls across all time
 
-### Settings
+### 🔧 Settings
+
+![Settings](docs/screenshots/settings.webp)
 
 Manage your proxy configuration without touching files:
 
 - **Vertex AI Credentials**: paste your service account JSON key, status indicator shows if configured
+- **Vertex AI Configuration**: GCP project ID, Vertex location, default model
 - **Allowed Models**: one model per line — only these can be called through the proxy
 - **Billing Mode**: switch between Auto Recurring (monthly reset) and Manual (custom balance + expiry)
-- **Test Connectivity**: send a minimal request to verify everything works
+- **Test Connectivity**: save and send a minimal request to verify everything works
+- **Reset Period**: immediately clear current period spending
+
+### 🤖 Agent Help
+
+![Agent Help](docs/screenshots/agent.webp)
+
+Click the **Agent** button in the navigation bar to open a help modal containing:
+
+- Proxy endpoint info and integration guide
+- Hermes configuration example
+- Skill API install paths (Claude / Hermes / generic)
+- Skill usage examples (query balance, list models, etc.)
 
 ---
 
@@ -105,7 +125,7 @@ Vertex Monitor needs a GCP service account JSON key to call the Vertex AI API.
 5. Choose **JSON** → download the file
 6. Rename it to `vertex-key.json` and place it in the project root
 
-> ⚠️ `vertex-key.json` is excluded by `.gitignore` and will never be committed.
+> ⚠️ `vertex-key.json` is excluded by `.gitignore` and will never be committed. You can also paste the key content directly via the Settings page.
 
 ---
 
@@ -115,7 +135,7 @@ Vertex Monitor needs a GCP service account JSON key to call the Vertex AI API.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/v1/chat/completions` | OpenAI-compatible chat completions (proxied to Vertex AI) |
+| `POST` | `/v1/chat/completions` | OpenAI-compatible chat completions (proxied to Vertex AI, supports SSE streaming) |
 
 ### Management Endpoints
 
@@ -130,20 +150,27 @@ Vertex Monitor needs a GCP service account JSON key to call the Vertex AI API.
 | `POST` | `/api/reset` | Reset current period spending |
 | `GET` | `/api/stats` | Per-model cost statistics |
 | `GET` | `/api/history` | Recent API call history |
-| `GET` | `/api/settings` | Get credentials + model allowlist |
-| `POST` | `/api/settings` | Save credentials + model allowlist |
+| `GET` | `/api/settings` | Get credentials + Vertex config + model allowlist |
+| `POST` | `/api/settings` | Save credentials + Vertex config + model allowlist |
 | `POST` | `/api/test` | Test Vertex AI connectivity |
+
+### Skill Endpoints (for AI Agents)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/skill/balance` | Query current balance and budget status, returns a human-readable summary message |
+| `GET` | `/skill/models` | Query currently allowed model list and default model |
 
 ### Update Billing Configuration
 
 ```bash
 # Auto recurring: reset $10 on the 1st of each month
-curl -X POST http://localhost:8899/api/config \
+curl -X POST http://localhost:8897/api/config \
   -H "Content-Type: application/json" \
   -d '{"mode":"auto_recurring","auto_reset_day":1,"auto_monthly_amount":10.0}'
 
 # Manual mode: $8.50 balance, expires end of next month
-curl -X POST http://localhost:8899/api/config \
+curl -X POST http://localhost:8897/api/config \
   -H "Content-Type: application/json" \
   -d '{"mode":"manual","manual_balance":8.50,"manual_expires_at":"2026-07-31"}'
 ```
@@ -159,7 +186,7 @@ Add to `~/.hermes/config.yaml`:
 ```yaml
 custom_providers:
   - name: vertex-budget
-    base_url: http://localhost:8899/v1
+    base_url: http://localhost:8897/v1
     api_key: noop
     model: gemini-3.1-flash-lite
     models:
@@ -189,7 +216,9 @@ Select `vertex-budget` with `/model` and you're set.
 
 ### Any OpenAI-Compatible Client
 
-Point your client's `base_url` to `http://localhost:8899/v1` with any non-empty API key.
+Point your client's `base_url` to `http://localhost:8897/v1` with any non-empty API key.
+
+Supports both `stream: true` (SSE) and `stream: false` (JSON) modes.
 
 ---
 
@@ -221,7 +250,13 @@ docker compose logs -f      # View logs
 docker compose down         # Stop
 ```
 
-Data persists in `./data/` (mounted as a Docker volume). Port 8899.
+Data persists in `./data/` (mounted as a Docker volume). Port 8897.
+
+Docker image features:
+
+- Runs as non-root user (`appuser`)
+- Built-in health check (`/health`)
+- Production server via `uvicorn`
 
 ---
 
@@ -229,11 +264,13 @@ Data persists in `./data/` (mounted as a Docker volume). Port 8899.
 
 ```
 VertexMonitor/
-├── proxy.py                  # FastAPI proxy + API endpoints
+├── proxy.py                  # FastAPI proxy + API endpoints + Skill API
 ├── store.py                  # Billing engine (dual-mode) + statistics
 ├── static/
 │   ├── index.html            # Dashboard page
 │   ├── settings.html         # Settings page
+│   ├── common.css            # Shared styles (dark theme, cards, buttons, modals)
+│   ├── common.js             # Shared logic (HTML escaping, notify/help modals, agent help)
 │   └── i18n.js               # Translation engine (EN / zh-CN)
 ├── config.example.json       # Example configuration (copy to config.json)
 ├── requirements.txt          # Python dependencies
@@ -246,6 +283,8 @@ VertexMonitor/
 ├── PRIVACY.md
 ├── data/                     # Runtime data (git-ignored)
 │   └── .gitkeep
+├── docs/
+│   └── screenshots/          # UI screenshots (dashboard, settings, agent help)
 └── README.md
 ```
 

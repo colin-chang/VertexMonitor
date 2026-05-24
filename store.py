@@ -67,6 +67,13 @@ class Store:
         return self.remaining <= 0
 
     @property
+    def current_balance(self) -> float:
+        """当前预算额度。"""
+        if self.billing.is_manual:
+            return self.billing.manual_balance
+        return self.billing.auto_monthly_amount
+
+    @property
     def _current_balance(self) -> float:
         if self.billing.is_manual:
             return self.billing.manual_balance

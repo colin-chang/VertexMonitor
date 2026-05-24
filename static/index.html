@@ -4,54 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title data-i18n="nav_title">Vertex Monitor</title>
+<link rel="stylesheet" href="/static/common.css">
 <style>
-  :root {
-    --bg: #0d1117;
-    --card: #161b22;
-    --border: #30363d;
-    --text: #c9d1d9;
-    --muted: #8b949e;
-    --accent: #58a6ff;
-    --green: #3fb950;
-    --yellow: #d2991d;
-    --red: #f85149;
-    --radius: 8px;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  .i18n-hide { visibility: hidden; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg); color: var(--text);
-    min-height: 100vh; padding: 24px;
-  }
-  .container { max-width: 960px; margin: 0 auto; }
-
-  .nav { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-  .nav h1 { font-size: 20px; margin: 0; }
-  .nav-links { display: flex; gap: 8px; margin-left: auto; align-items: center; }
-  .nav-links a {
-    padding: 5px 14px; border-radius: 20px;
-    font-size: 13px; text-decoration: none; color: var(--muted);
-    transition: all 0.15s;
-  }
-  .nav-links a:hover { color: var(--text); background: var(--card); }
-  .nav-links a.active { color: var(--accent); background: #1f3a5f; font-weight: 600; }
-
-  .lang-select {
-    width: auto; padding: 4px 8px;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 6px; color: var(--muted); font-size: 12px;
-    cursor: pointer; outline: none;
-  }
-  .lang-select:focus { border-color: var(--accent); }
-
-  h2 { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
-
-  .card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
-  }
-
   .balance-row { display: flex; gap: 24px; flex-wrap: wrap; }
   .balance-item { flex: 1; min-width: 140px; }
   .balance-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
@@ -68,45 +22,11 @@
   .status-badge.warn { background: #3a2e1a; color: var(--yellow); }
   .status-badge.err { background: #3a1a1a; color: var(--red); }
 
-  .btn {
-    padding: 8px 20px; border: none; border-radius: 6px;
-    font-size: 14px; font-weight: 600; cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .btn:hover { opacity: 0.85; }
-  .btn-primary { background: var(--accent); color: #fff; }
-
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
   th { color: var(--muted); font-weight: 600; }
   .mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; }
   .loading { color: var(--muted); font-style: italic; }
-
-  .content-modal .modal { max-width: 560px; text-align: left; }
-  .content-modal .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
-  .content-modal .modal-body { font-size: 13px; color: var(--muted); line-height: 1.7; max-height: 60vh; overflow-y: auto; }
-  .content-modal .modal-body strong { color: var(--text); }
-  .content-modal .modal-body code { background: var(--bg); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--accent); }
-  .content-modal .modal-body pre { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; overflow-x: auto; margin: 8px 0; }
-  .content-modal .modal-body pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
-  .content-modal .modal-body ol, .content-modal .modal-body ul { padding-left: 20px; margin: 6px 0; }
-  .content-modal .modal-body li { margin-bottom: 4px; }
-  .content-modal .modal-body a { color: var(--accent); }
-
-  .modal-overlay {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.65); z-index: 1000;
-    align-items: center; justify-content: center;
-  }
-  .modal-overlay.show { display: flex; }
-  .modal {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 28px; max-width: 400px; width: 90%;
-    text-align: center;
-  }
-  .modal .icon { font-size: 40px; margin-bottom: 12px; }
-  .modal .msg { font-size: 15px; margin-bottom: 16px; color: var(--text); }
-  .modal .btn { min-width: 100px; }
 
   .chart-grid { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
   .chart-box { flex: 1; min-width: 280px; position: relative; height: 260px; }
@@ -117,7 +37,7 @@
     .balance-row { flex-direction: column; gap: 16px; }
   }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" integrity="sha384-T/4KgSWuZEPozpPz7rnnp/5lDSnpY1VPJCojf1S81uTHS1E38qgLfMgVsAeRCWc4" crossorigin="anonymous"></script>
 <script src="/static/i18n.js"></script>
 <script>if(i18n.getLang()!=='en'){i18n.applyAll()}</script>
 </head>
@@ -128,7 +48,7 @@
     <div class="nav-links">
       <a href="/" class="active">📊 <span data-i18n="nav_dashboard">Dashboard</span></a>
       <a href="/settings">🔧 <span data-i18n="nav_settings">Settings</span></a>
-      <a href="javascript:void(0)" onclick="showAgentHelp()">🤖 <span data-i18n="nav_agent">Agent</span></a>
+      <button type="button" onclick="showAgentHelp()">🤖 <span data-i18n="nav_agent">Agent</span></button>
       <select class="lang-select" onchange="i18n.setLang(this.value)">
         <option value="en">EN</option>
         <option value="zh-CN">中文</option>
@@ -201,7 +121,7 @@
   </div>
 </div>
 
-<div class="modal-overlay notify-modal" id="notifyModal" onclick="closeNotify()">
+<div class="modal-overlay" id="notifyModal" onclick="closeNotify()">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="icon" id="notifyIcon"></div>
     <div class="msg" id="notifyMsg"></div>
@@ -219,43 +139,42 @@
   </div>
 </div>
 
+<script src="/static/common.js"></script>
 <script>
-// ── Init language selector ──
+// ── Init ──
 (function(){
   i18n.applyAll();
   document.body.classList.remove('i18n-hide');
-  var sel = document.querySelector('.lang-select');
+  const sel = document.querySelector('.lang-select');
   sel.value = i18n.getLang();
 })();
 
 // ── Dashboard ──
+let refreshTimer = null;
+
 async function init() {
-  await loadConfig();
+  await refreshOverview();
   await loadStats();
   await loadHistory();
+  refreshTimer = setInterval(refreshOverview, 15000);
 }
 init();
-setInterval(refreshOverview, 15000);
 
 async function refreshOverview() {
   try {
     const r = await fetch('/api/config');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const d = await r.json();
     updateOverview(d);
-  } catch(e) { console.error(e); }
-}
-
-async function loadConfig() {
-  try {
-    const r = await fetch('/api/config');
-    const d = await r.json();
-    updateOverview(d);
-  } catch(e) { console.error(e); }
+  } catch(e) {
+    console.error('refreshOverview failed:', e);
+    document.getElementById('remaining').textContent = '—';
+  }
 }
 
 function updateOverview(d) {
-  var rem = d.current.remaining;
-  var remEl = document.getElementById('remaining');
+  const rem = d.current.remaining;
+  const remEl = document.getElementById('remaining');
   remEl.textContent = '$' + rem.toFixed(4);
   remEl.className = 'balance-value ' + (d.current.exhausted ? 'red' : rem < d.current.balance * 0.2 ? 'yellow' : 'green');
 
@@ -264,11 +183,10 @@ function updateOverview(d) {
   document.getElementById('expires').textContent = d.current.expires_at ? formatDate(d.current.expires_at) : '—';
   document.getElementById('calls').textContent = d.period.total_calls;
 
-  var badge = document.getElementById('statusBadge');
-  var cls = d.current.exhausted ? 'err' : d.current.spent > d.current.balance * 0.8 ? 'warn' : 'ok';
+  const badge = document.getElementById('statusBadge');
+  const cls = d.current.exhausted ? 'err' : d.current.spent > d.current.balance * 0.8 ? 'warn' : 'ok';
   badge.className = 'status-badge ' + cls;
-
-  var statusKeys = { ok: 'status_healthy', warn: 'status_warning', err: 'status_exhausted' };
+  const statusKeys = { ok: 'status_healthy', warn: 'status_warning', err: 'status_exhausted' };
   badge.textContent = i18n.t(statusKeys[cls] || 'status_healthy');
 
   document.getElementById('lifetimeSpent').textContent = '$' + d.lifetime.spent.toFixed(4);
@@ -276,7 +194,7 @@ function updateOverview(d) {
 }
 
 function formatDate(iso) {
-  var d = new Date(iso);
+  const d = new Date(iso);
   if (isNaN(d.getTime())) return iso;
   if (i18n.getLang() === 'zh-CN') {
     return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
@@ -285,33 +203,43 @@ function formatDate(iso) {
 }
 
 // ── Stats + Charts ──
-var costChart = null, tokenChart = null;
+let costChart = null, tokenChart = null;
+
+const CHART_COLORS = [
+  '#58a6ff','#3fb950','#d2991d','#f85149','#bc8cff',
+  '#f778ba','#79c0ff','#56d364','#e3b341','#ff7b72',
+  '#a5d6ff','#7ee787','#f0883e','#ffa198','#d2a8ff',
+];
 
 async function loadStats() {
   try {
-    var r = await fetch('/api/stats');
-    var d = await r.json();
-    var models = d.models || {};
-    var tbody = document.getElementById('modelTable');
+    const r = await fetch('/api/stats');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    const models = d.models || {};
+    const tbody = document.getElementById('modelTable');
     if (Object.keys(models).length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted)">' + i18n.t('chart_no_data') + '</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted)">' + escHtml(i18n.t('chart_no_data')) + '</td></tr>';
       clearCharts();
       return;
     }
     tbody.innerHTML = Object.entries(models)
-      .sort(function(a,b) { return b[1].cost - a[1].cost; })
-      .map(function(e) {
-        var name = e[0], s = e[1];
-        return '<tr><td class="mono">' + name + '</td><td>' + s.calls + '</td><td class="mono">' +
+      .sort((a,b) => b[1].cost - a[1].cost)
+      .map(e => {
+        const name = e[0], s = e[1];
+        return '<tr><td class="mono">' + escHtml(name) + '</td><td>' + s.calls + '</td><td class="mono">' +
           s.prompt_tokens.toLocaleString() + '</td><td class="mono">' + s.completion_tokens.toLocaleString() +
           '</td><td class="mono">$' + s.cost.toFixed(6) + '</td></tr>';
       }).join('');
     renderCharts(models);
-  } catch(e) { console.error(e); }
+  } catch(e) {
+    console.error('loadStats failed:', e);
+    document.getElementById('modelTable').innerHTML = '<tr><td colspan="5" style="color:var(--red)">Failed to load stats</td></tr>';
+  }
 }
 
 function clearCharts() {
-  [costChart, tokenChart].forEach(function(c) { if (c) c.destroy(); });
+  [costChart, tokenChart].forEach(c => { if (c) c.destroy(); });
   costChart = tokenChart = null;
   document.getElementById('chartArea').style.display = 'none';
 }
@@ -321,18 +249,12 @@ Chart.defaults.borderColor = 'rgba(48,54,61,0.5)';
 Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 Chart.defaults.font.size = 11;
 
-var CHART_COLORS = [
-  '#58a6ff','#3fb950','#d2991d','#f85149','#bc8cff',
-  '#f778ba','#79c0ff','#56d364','#e3b341','#ff7b72',
-  '#a5d6ff','#7ee787','#f0883e','#ffa198','#d2a8ff',
-];
-
 function renderCharts(models) {
   document.getElementById('chartArea').style.display = '';
-  var entries = Object.entries(models).sort(function(a,b) { return b[1].cost - a[1].cost; });
-  var labels = entries.map(function(e) { return e[0].replace(/^gemini-/, ''); });
-  var promptLabel = i18n.t('chart_prompt');
-  var completionLabel = i18n.t('chart_completion');
+  const entries = Object.entries(models).sort((a,b) => b[1].cost - a[1].cost);
+  const labels = entries.map(e => e[0].replace(/^gemini-/, ''));
+  const promptLabel = i18n.t('chart_prompt');
+  const completionLabel = i18n.t('chart_completion');
 
   if (costChart) costChart.destroy();
   costChart = new Chart(document.getElementById('costChart').getContext('2d'), {
@@ -340,8 +262,8 @@ function renderCharts(models) {
     data: {
       labels: labels,
       datasets: [{
-        data: entries.map(function(e) { return e[1].cost; }),
-        backgroundColor: CHART_COLORS,
+        data: entries.map(e => e[1].cost),
+        backgroundColor: entries.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]),
         borderColor: '#161b22',
         borderWidth: 2,
       }]
@@ -363,7 +285,7 @@ function renderCharts(models) {
                   text: l + '  $' + chart.data.datasets[0].data[i].toFixed(4),
                   fillStyle: chart.data.datasets[0].backgroundColor[i],
                   strokeStyle: chart.data.datasets[0].backgroundColor[i],
-                  fontColor: '#c9d1d9',
+                  color: '#c9d1d9',
                   lineWidth: 0, hidden: false, index: i,
                   pointStyle: 'circle', rotation: 0,
                 };
@@ -374,7 +296,7 @@ function renderCharts(models) {
         tooltip: {
           callbacks: {
             label: function(ctx) {
-              var total = ctx.dataset.data.reduce(function(a,b) { return a+b; }, 0);
+              const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
               return ' $' + ctx.raw.toFixed(6) + ' (' + ((ctx.raw/total)*100).toFixed(1) + '%)';
             }
           }
@@ -389,9 +311,9 @@ function renderCharts(models) {
     data: {
       labels: labels,
       datasets: [
-        { label: promptLabel, data: entries.map(function(e) { return e[1].prompt_tokens; }),
+        { label: promptLabel, data: entries.map(e => e[1].prompt_tokens),
           backgroundColor: '#58a6ff', borderRadius: 3 },
-        { label: completionLabel, data: entries.map(function(e) { return e[1].completion_tokens; }),
+        { label: completionLabel, data: entries.map(e => e[1].completion_tokens),
           backgroundColor: '#3fb950', borderRadius: 3 }
       ]
     },
@@ -425,73 +347,25 @@ function renderCharts(models) {
 // ── History ──
 async function loadHistory() {
   try {
-    var r = await fetch('/api/history?limit=20');
-    var items = await r.json();
-    var tbody = document.getElementById('historyTable');
+    const r = await fetch('/api/history?limit=20');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const items = await r.json();
+    const tbody = document.getElementById('historyTable');
     if (!items.length) {
-      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted)">' + i18n.t('history_no_records') + '</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted)">' + escHtml(i18n.t('history_no_records')) + '</td></tr>';
       return;
     }
-    var locale = i18n.getLang() === 'zh-CN' ? 'zh-CN' : 'en-US';
-    tbody.innerHTML = items.reverse().map(function(h) {
+    const locale = i18n.getLang() === 'zh-CN' ? 'zh-CN' : 'en-US';
+    tbody.innerHTML = [...items].reverse().map(h => {
       return '<tr><td style="font-size:12px;color:var(--muted)">' +
-        new Date(h.ts).toLocaleString(locale) + '</td><td class="mono">' + (h.model||'—') +
+        new Date(h.ts).toLocaleString(locale) + '</td><td class="mono">' + escHtml(h.model||'—') +
         '</td><td class="mono">' + h.prompt_tokens + '</td><td class="mono">' +
         h.completion_tokens + '</td><td class="mono">$' + h.cost.toFixed(8) + '</td></tr>';
     }).join('');
-  } catch(e) { console.error(e); }
-}
-
-// ── Notify ──
-function notify(icon, msg) {
-  document.getElementById('notifyIcon').textContent = icon;
-  document.getElementById('notifyMsg').innerHTML = msg;
-  document.getElementById('notifyModal').classList.add('show');
-}
-function closeNotify(e) {
-  if (e && e.target !== document.getElementById('notifyModal')) return;
-  document.getElementById('notifyModal').classList.remove('show');
-}
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') { closeNotify(); closeHelp(); }
-});
-
-function openHelp(title, bodyHtml) {
-  document.getElementById('helpTitle').textContent = title;
-  document.getElementById('helpBody').innerHTML = bodyHtml;
-  document.getElementById('helpModal').classList.add('show');
-}
-function closeHelp(e) {
-  if (e && e.target !== document.getElementById('helpModal')) return;
-  document.getElementById('helpModal').classList.remove('show');
-}
-
-function showAgentHelp() {
-  openHelp(i18n.t('agent_help_title'),
-    '<p>' + i18n.t('agent_help_desc') + '</p>' +
-    '<p style="margin-top:8px;"><strong>' + i18n.t('agent_help_endpoint') + ':</strong> <code>POST /v1/chat/completions</code></p>' +
-    '<p style="margin-top:14px;"><strong>' + i18n.t('agent_help_hermes') + '</strong></p>' +
-    '<ol>' +
-    '<li>' + i18n.t('agent_help_step1') + '</li>' +
-    '<li>' + i18n.t('agent_help_step2') + '</li>' +
-    '</ol>' +
-    '<pre><code>' + i18n.t('agent_help_config') + '</code></pre>' +
-    '<p style="margin-top:4px;">3. ' + i18n.t('agent_help_step3') + '</p>' +
-    '<p style="margin-top:10px;">💡 <strong>' + i18n.t('agent_help_note_label') + '</strong> ' + i18n.t('agent_help_note') + '</p>' +
-    '<hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">' +
-    '<p><strong>' + i18n.t('agent_help_skill_title') + '</strong></p>' +
-    '<p style="margin-top:4px;">' + i18n.t('agent_help_skill_desc') + '</p>' +
-    '<p style="margin-top:12px;"><strong>' + i18n.t('agent_help_skill_install') + '</strong></p>' +
-    '<p style="margin-top:4px;">' + i18n.t('agent_help_skill_install_desc') + '</p>' +
-    '<pre><code>' + i18n.t('agent_help_skill_install_claude') + ':  ~/.claude/skills/vertex-monitor/SKILL.md\n' + i18n.t('agent_help_skill_install_hermes') + ':    ~/.hermes/skills/vertex-monitor/SKILL.md\n' + i18n.t('agent_help_skill_install_generic') + ':  &lt;project&gt;/.agents/skills/vertex-monitor/SKILL.md</code></pre>' +
-    '<p style="margin-top:12px;"><strong>' + i18n.t('agent_help_skill_usage') + '</strong></p>' +
-    '<p style="margin-top:4px;">' + i18n.t('agent_help_skill_usage_desc') + '</p>' +
-    '<ul style="margin-top:6px;padding-left:20px;font-size:13px;line-height:2;">' +
-    '<li>' + i18n.t('agent_help_skill_usage_ex1') + '</li>' +
-    '<li>' + i18n.t('agent_help_skill_usage_ex2') + '</li>' +
-    '<li>' + i18n.t('agent_help_skill_usage_ex3') + '</li>' +
-    '</ul>'
-  );
+  } catch(e) {
+    console.error('loadHistory failed:', e);
+    document.getElementById('historyTable').innerHTML = '<tr><td colspan="5" style="color:var(--red)">Failed to load history</td></tr>';
+  }
 }
 </script>
 </body>

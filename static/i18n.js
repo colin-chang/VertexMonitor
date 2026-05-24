@@ -1,7 +1,7 @@
 // Vertex Monitor i18n — English (default) + 简体中文
 (function() {
-  var LANG_KEY = 'vm_lang';
-  var messages = {
+  const LANG_KEY = 'vm_lang';
+  const messages = {
     en: {
       // Nav
       nav_title: 'Vertex Monitor',
@@ -55,6 +55,7 @@
       key_placeholder: 'Paste the content of your vertex-key.json file...',
       key_hint: 'Paste the full content of your',
       key_hint_file: 'file into the textarea above',
+      key_already_configured: 'Key already configured. Click the textarea and paste a new key to replace.',
 
       // Settings — Key Help
       key_help_title: 'How to obtain a Vertex AI Service Account Key',
@@ -76,15 +77,6 @@
       vertex_location_hint: 'Region for Vertex AI API (e.g. global, us-central1)',
       vertex_model_label: 'Default Model',
       vertex_model_hint: 'The default model used when no model is specified in the request',
-
-      // Settings — Vertex Config
-      vertex_config_title: 'Vertex AI 配置',
-      vertex_project_label: 'GCP 项目 ID',
-      vertex_project_hint: 'Vertex AI 所用的 Google Cloud 项目 ID（如 ai-project-384207）',
-      vertex_location_label: 'Vertex 区域',
-      vertex_location_hint: 'Vertex AI API 区域（如 global、us-central1）',
-      vertex_model_label: '默认模型',
-      vertex_model_hint: '请求中未指定模型时使用的默认模型',
 
       // Settings — Models
       models_title: 'Allowed Models',
@@ -147,9 +139,9 @@
       agent_help_desc: 'VertexMonitor provides an <strong>OpenAI-compatible API proxy</strong> that can be used as a backend for any AI Agent framework.',
       agent_help_endpoint: 'Endpoint',
       agent_help_hermes: 'Example: Hermes Integration',
-      agent_help_step1: 'Ensure VertexMonitor is running (default: <code>http://localhost:8899</code>)',
+      agent_help_step1: 'Ensure VertexMonitor is running (default: <code>http://localhost:8897</code>)',
       agent_help_step2: 'In Hermes configuration, add a custom provider:',
-      agent_help_config: 'custom_providers:\n  - name: vertex\n    base_url: http://localhost:8899/v1\n    api_key: noop\n    model: gemini-3.1-flash-lite\n    models:\n      gemini-3.1-flash-lite:\n        context_length: 1048576\n      gemini-3.5-flash:\n        context_length: 1048576\n      gemini-3.1-pro-preview:\n        context_length: 2097152',
+      agent_help_config: 'custom_providers:\n  - name: vertex\n    base_url: http://localhost:8897/v1\n    api_key: noop\n    model: gemini-3.1-flash-lite\n    models:\n      gemini-3.1-flash-lite:\n        context_length: 1048576\n      gemini-3.5-flash:\n        context_length: 1048576\n      gemini-3.1-pro-preview:\n        context_length: 2097152',
       agent_help_step3: 'Select the <code>vertex</code> provider in Hermes for conversations',
       agent_help_note_label: 'Note:',
       agent_help_note: 'The <code>api_key</code> can be any non-empty string — VertexMonitor authenticates via GCP service account, not API keys. Only models in the allowed list can be used.',
@@ -215,6 +207,7 @@
       key_placeholder: '粘贴 vertex-key.json 文件内容...',
       key_hint: '将',
       key_hint_file: '文件内容完整粘贴到上方文本框',
+      key_already_configured: 'Key 已配置。点击文本框并粘贴新 Key 即可更换。',
 
       key_help_title: '如何获取 Vertex AI 服务账号 Key',
       key_help_step1: '打开',
@@ -226,6 +219,14 @@
       key_help_step7: '点击 添加密钥 → 创建新密钥，选择 JSON 格式',
       key_help_step8: '下载文件，用文本编辑器打开，复制全部内容粘贴到上方文本框',
       key_help_security: '安全提醒：Key 仅存储在本地容器内，不会上传到任何外部服务。',
+
+      vertex_config_title: 'Vertex AI 配置',
+      vertex_project_label: 'GCP 项目 ID',
+      vertex_project_hint: 'Vertex AI 所用的 Google Cloud 项目 ID（如 ai-project-384207）',
+      vertex_location_label: 'Vertex 区域',
+      vertex_location_hint: 'Vertex AI API 区域（如 global、us-central1）',
+      vertex_model_label: '默认模型',
+      vertex_model_hint: '请求中未指定模型时使用的默认模型',
 
       models_title: '允许的模型列表',
       models_label: '每行一个模型名',
@@ -279,9 +280,9 @@
       agent_help_desc: 'VertexMonitor 提供了 <strong>OpenAI 兼容的 API 代理</strong>，可作为任何 AI Agent 框架的后端使用。',
       agent_help_endpoint: '接口地址',
       agent_help_hermes: '示例：Hermes 接入',
-      agent_help_step1: '确保 VertexMonitor 正在运行（默认：<code>http://localhost:8899</code>）',
+      agent_help_step1: '确保 VertexMonitor 正在运行（默认：<code>http://localhost:8897</code>）',
       agent_help_step2: '在 Hermes 配置中，添加自定义提供者：',
-      agent_help_config: 'custom_providers:\n  - name: vertex\n    base_url: http://localhost:8899/v1\n    api_key: noop\n    model: gemini-3.1-flash-lite\n    models:\n      gemini-3.1-flash-lite:\n        context_length: 1048576\n      gemini-3.5-flash:\n        context_length: 1048576\n      gemini-3.1-pro-preview:\n        context_length: 2097152',
+      agent_help_config: 'custom_providers:\n  - name: vertex\n    base_url: http://localhost:8897/v1\n    api_key: noop\n    model: gemini-3.1-flash-lite\n    models:\n      gemini-3.1-flash-lite:\n        context_length: 1048576\n      gemini-3.5-flash:\n        context_length: 1048576\n      gemini-3.1-pro-preview:\n        context_length: 2097152',
       agent_help_step3: '在 Hermes 中选择 <code>vertex</code> 提供者进行对话',
       agent_help_note_label: '注意：',
       agent_help_note: '<code>api_key</code> 可以填写任意非空字符串 — VertexMonitor 通过 GCP 服务账号认证，而非 API Key。仅允许列表中的模型可被调用。',
@@ -309,14 +310,14 @@
   }
 
   function t(key) {
-    var lang = getLang();
+    const lang = getLang();
     return (messages[lang] && messages[lang][key]) || messages.en[key] || key;
   }
 
   function applyEl(el) {
-    var key = el.getAttribute('data-i18n');
+    const key = el.getAttribute('data-i18n');
     if (!key) return;
-    var text = t(key);
+    const text = t(key);
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
       if (el.type === 'submit' || el.type === 'button') {
         el.value = text;
@@ -332,8 +333,8 @@
 
   // ── Apply all existing data-i18n elements ──
   function applyAll() {
-    var els = document.querySelectorAll('[data-i18n]');
-    for (var i = 0; i < els.length; i++) applyEl(els[i]);
+    const els = document.querySelectorAll('[data-i18n]');
+    for (let i = 0; i < els.length; i++) applyEl(els[i]);
   }
 
   // ── Public API ──

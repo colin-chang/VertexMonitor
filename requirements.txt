@@ -1,4 +1,3 @@
-google-cloud-aiplatform
-litellm
+litellm[google]
 fastapi
 uvicorn[standard]

@@ -4,44 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title data-i18n="nav_title">Vertex Monitor · Settings</title>
+<link rel="stylesheet" href="/static/common.css">
 <style>
-  :root {
-    --bg: #0d1117; --card: #161b22; --border: #30363d;
-    --text: #c9d1d9; --muted: #8b949e; --accent: #58a6ff;
-    --green: #3fb950; --yellow: #d2991d; --red: #f85149; --radius: 8px;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  .i18n-hide { visibility: hidden; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg); color: var(--text);
-    min-height: 100vh; padding: 24px;
-  }
-  .container { max-width: 960px; margin: 0 auto; }
-
-  .nav { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-  .nav h1 { font-size: 20px; margin: 0; }
-  .nav-links { display: flex; gap: 8px; margin-left: auto; align-items: center; }
-  .nav-links a {
-    padding: 5px 14px; border-radius: 20px;
-    font-size: 13px; text-decoration: none; color: var(--muted);
-    transition: all 0.15s;
-  }
-  .nav-links a:hover { color: var(--text); background: var(--card); }
-  .nav-links a.active { color: var(--accent); background: #1f3a5f; font-weight: 600; }
-
-  .lang-select {
-    width: auto; padding: 4px 8px;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 6px; color: var(--muted); font-size: 12px;
-    cursor: pointer; outline: none;
-  }
-  .lang-select:focus { border-color: var(--accent); }
-
-  h2 { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
-
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
-
   .form-group { margin-bottom: 14px; }
   label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
   input, textarea, select:not(.lang-select) {
@@ -81,13 +45,6 @@
   .help-box li { margin-bottom: 3px; }
   .help-box a { color: var(--accent); }
 
-  .btn { padding: 8px 20px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn:not(:disabled):hover { opacity: 0.85; }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-danger { background: var(--red); color: #fff; }
-  .btn-secondary { background: var(--border); color: var(--text); }
-
   .btn-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
   .btn-row .spacer { flex: 1; }
   #testResult { font-size: 13px; line-height: 1.5; }
@@ -102,24 +59,6 @@
   }
   .help-icon:hover { background: var(--accent); color: #fff; }
 
-  .content-modal .modal { max-width: 560px; text-align: left; }
-  .content-modal .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
-  .content-modal .modal-body { font-size: 13px; color: var(--muted); line-height: 1.7; max-height: 60vh; overflow-y: auto; }
-  .content-modal .modal-body strong { color: var(--text); }
-  .content-modal .modal-body code { background: var(--bg); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--accent); }
-  .content-modal .modal-body pre { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; overflow-x: auto; margin: 8px 0; }
-  .content-modal .modal-body pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
-  .content-modal .modal-body ol, .content-modal .modal-body ul { padding-left: 20px; margin: 6px 0; }
-  .content-modal .modal-body li { margin-bottom: 4px; }
-  .content-modal .modal-body a { color: var(--accent); }
-
-  .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; }
-  .modal-overlay.show { display: flex; }
-  .modal { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 28px; max-width: 400px; width: 90%; text-align: center; }
-  .modal .icon { font-size: 40px; margin-bottom: 12px; }
-  .modal .msg { font-size: 15px; margin-bottom: 16px; color: var(--text); }
-  .modal .btn { min-width: 100px; }
-
   @media (max-width: 640px) { .form-row { flex-direction: column; } }
 </style>
 <script src="/static/i18n.js"></script>
@@ -132,7 +71,7 @@
     <div class="nav-links">
       <a href="/">📊 <span data-i18n="nav_dashboard">Dashboard</span></a>
       <a href="/settings" class="active">🔧 <span data-i18n="nav_settings">Settings</span></a>
-      <a href="javascript:void(0)" onclick="showAgentHelp()">🤖 <span data-i18n="nav_agent">Agent</span></a>
+      <button type="button" onclick="showAgentHelp()">🤖 <span data-i18n="nav_agent">Agent</span></button>
       <select class="lang-select" onchange="i18n.setLang(this.value)">
         <option value="en">EN</option>
         <option value="zh-CN">中文</option>
@@ -146,7 +85,10 @@
     <div class="form-group">
       <label data-i18n="key_label">Service Account JSON Key</label>
       <textarea class="key-area" id="keyJson" data-i18n="key_placeholder" placeholder="Paste the content of your vertex-key.json file..." oninput="onDirty()"></textarea>
-      <div style="font-size:12px;color:var(--muted);margin-top:4px;">
+      <div id="keyHintNew" style="font-size:12px;color:var(--green);margin-top:4px;display:none;">
+        ✅ <span data-i18n="key_already_configured">Key already configured. Paste a new key above to replace.</span>
+      </div>
+      <div id="keyHintEmpty" style="font-size:12px;color:var(--muted);margin-top:4px;">
         <span data-i18n="key_hint">Paste the full content of your</span> <code>vertex-key.json</code> <span data-i18n="key_hint_file">file into the textarea above</span>
       </div>
     </div>
@@ -267,24 +209,25 @@
   </div>
 </div>
 
+<script src="/static/common.js"></script>
 <script>
 (function(){
   i18n.applyAll();
   document.body.classList.remove('i18n-hide');
-  var sel = document.querySelector('.lang-select');
+  const sel = document.querySelector('.lang-select');
   sel.value = i18n.getLang();
 })();
 
-var currentMode = 'auto_recurring';
-var dirty = false;
-var hasKey = false;
-var initialModels = [];
-var initialKeyLoaded = false;
+let currentMode = 'auto_recurring';
+let dirty = false;
+let hasKey = false;
+let initialModels = [];
+let initialKeyContent = '';
 
 function updateButtonStates() {
-  var keyFilled = document.getElementById('keyJson').value.trim().length > 0;
-  var modelsText = document.getElementById('modelList').value.trim();
-  var modelsExist = modelsText.length > 0;
+  const keyFilled = document.getElementById('keyJson').value.trim().length > 0;
+  const modelsText = document.getElementById('modelList').value.trim();
+  const modelsExist = modelsText.length > 0;
   document.getElementById('saveBtn').disabled = !dirty;
   document.getElementById('testBtn').disabled = !((keyFilled || hasKey) && modelsExist);
   document.getElementById('dirtyHint').style.display = dirty ? 'inline' : 'none';
@@ -298,38 +241,44 @@ async function init() { await loadSettings(); await loadBilling(); }
 
 async function loadSettings() {
   try {
-    var r = await fetch('/api/settings');
-    var d = await r.json();
+    const r = await fetch('/api/settings');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
     hasKey = d.has_key;
-    var badge = document.getElementById('keyStatusBadge');
+    const badge = document.getElementById('keyStatusBadge');
     if (d.has_key) {
       badge.innerHTML = '<span class="key-status ok">✅ ' + escHtml(d.key_preview) + '</span>';
+      document.getElementById('keyHintNew').style.display = '';
+      document.getElementById('keyHintEmpty').style.display = 'none';
     } else {
-      badge.innerHTML = '<span class="key-status none">⚠ ' + i18n.t('key_status_none') + '</span>';
+      badge.innerHTML = '<span class="key-status none">⚠ ' + escHtml(i18n.t('key_status_none')) + '</span>';
+      document.getElementById('keyHintNew').style.display = 'none';
+      document.getElementById('keyHintEmpty').style.display = '';
     }
     if (d.key_content) document.getElementById('keyJson').value = d.key_content;
+    initialKeyContent = d.key_content || '';
     initialModels = d.models || [];
     document.getElementById('modelList').value = initialModels.join('\n');
     document.getElementById('vertexProject').value = d.vertex_project || '';
     document.getElementById('vertexLocation').value = d.vertex_location || '';
     document.getElementById('vertexModel').value = d.vertex_model || '';
-    initialKeyLoaded = true;
     dirty = false;
     updateButtonStates();
-  } catch(e) { console.error(e); }
+  } catch(e) { console.error('loadSettings failed:', e); }
 }
 
 async function loadBilling() {
   try {
-    var r = await fetch('/api/config');
-    var d = await r.json();
+    const r = await fetch('/api/config');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
     currentMode = d.billing.mode;
     document.getElementById('auto_reset_day').value = d.billing.auto_reset_day;
     document.getElementById('auto_monthly_amount').value = d.billing.auto_monthly_amount;
     document.getElementById('manual_balance').value = d.billing.manual_balance;
     document.getElementById('manual_expires_at').value = d.billing.manual_expires_at ? d.billing.manual_expires_at.slice(0,10) : '';
     switchTabUI(currentMode);
-  } catch(e) { console.error(e); }
+  } catch(e) { console.error('loadBilling failed:', e); }
 }
 init();
 
@@ -342,23 +291,23 @@ function switchTabUI(mode) {
 }
 
 function validate() {
-  var errors = [];
-  var modelsText = document.getElementById('modelList').value.trim();
+  const errors = [];
+  const modelsText = document.getElementById('modelList').value.trim();
   if (!modelsText) errors.push(i18n.t('val_model_empty'));
-  var keyJson = document.getElementById('keyJson').value.trim();
+  const keyJson = document.getElementById('keyJson').value.trim();
   if (keyJson) {
     try {
-      var parsed = JSON.parse(keyJson);
-      if (!parsed.private_key && !parsed.client_email) errors.push(i18n.t('val_key_missing_fields'));
+      const parsed = JSON.parse(keyJson);
+      if (!parsed.private_key || !parsed.client_email) errors.push(i18n.t('val_key_missing_fields'));
     } catch(e) { errors.push(i18n.t('val_key_invalid_json') + ': ' + e.message); }
   }
   if (currentMode === 'auto_recurring') {
-    var day = parseInt(document.getElementById('auto_reset_day').value);
+    const day = parseInt(document.getElementById('auto_reset_day').value);
     if (isNaN(day) || day<1 || day>28) errors.push(i18n.t('val_reset_day_range'));
-    var amt = parseFloat(document.getElementById('auto_monthly_amount').value);
+    const amt = parseFloat(document.getElementById('auto_monthly_amount').value);
     if (isNaN(amt) || amt<0) errors.push(i18n.t('val_amount_nonnegative'));
   } else {
-    var bal = parseFloat(document.getElementById('manual_balance').value);
+    const bal = parseFloat(document.getElementById('manual_balance').value);
     if (isNaN(bal) || bal<0) errors.push(i18n.t('val_amount_nonnegative'));
     if (!document.getElementById('manual_expires_at').value) errors.push(i18n.t('val_expiry_required'));
   }
@@ -366,29 +315,31 @@ function validate() {
 }
 
 async function saveAll() {
-  var v = validate();
-  if (!v.valid) { notify('⚠️', i18n.t('val_fix_errors') + ':<br><br>' + v.errors.map(function(e){return '· '+e;}).join('<br>')); return; }
-  var modelsText = document.getElementById('modelList').value.trim();
-  var newModels = modelsText.split('\n').map(function(s){return s.trim();}).filter(function(s){return s;});
-  var keyJson = document.getElementById('keyJson').value.trim();
-  var changed = JSON.stringify(newModels)!==JSON.stringify(initialModels) || keyJson.length>0;
+  const v = validate();
+  if (!v.valid) { notify('⚠️', i18n.t('val_fix_errors') + ':<br><br>' + v.errors.map(e => '· '+e).join('<br>')); return; }
+  const modelsText = document.getElementById('modelList').value.trim();
+  const newModels = modelsText.split('\n').map(s => s.trim()).filter(s => s);
+  const keyJson = document.getElementById('keyJson').value.trim();
+  const keyChanged = keyJson !== initialKeyContent;
+  const changed = JSON.stringify(newModels) !== JSON.stringify(initialModels) || keyChanged;
   if (changed) {
     try {
-      var body = {
+      const body = {
         models: newModels,
         vertex_project: document.getElementById('vertexProject').value.trim(),
         vertex_location: document.getElementById('vertexLocation').value.trim(),
         vertex_model: document.getElementById('vertexModel').value.trim(),
       };
-      if (keyJson) body.vertex_key_json = keyJson;
-      var r = await fetch('/api/settings', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-      var d = await r.json();
-      if (!d.ok) { var em = d.detail?(d.detail.message||d.detail.error||JSON.stringify(d.detail)):'Unknown'; notify('❌', i18n.t('val_save_failed')+': '+em); return; }
+      if (keyChanged && keyJson) body.vertex_key_json = keyJson;
+      const r = await fetch('/api/settings', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if (!r.ok) { const err = await r.json().catch(() => ({})); notify('❌', i18n.t('val_save_failed')+': '+(err.detail?.message||err.message||r.status)); return; }
+      const d = await r.json();
+      if (!d.ok) { const em = d.detail?(d.detail.message||d.detail.error||JSON.stringify(d.detail)):'Unknown'; notify('❌', i18n.t('val_save_failed')+': '+em); return; }
       initialModels = newModels;
-      if (keyJson) { hasKey = true; document.getElementById('keyJson').value = ''; }
+      if (keyChanged && keyJson) { hasKey = true; document.getElementById('keyJson').value = ''; initialKeyContent = ''; }
     } catch(e) { notify('❌', i18n.t('val_network_error')); return; }
   }
-  var bb = {mode:currentMode};
+  const bb = {mode:currentMode};
   if (currentMode==='auto_recurring') {
     bb.auto_reset_day = parseInt(document.getElementById('auto_reset_day').value);
     bb.auto_monthly_amount = parseFloat(document.getElementById('auto_monthly_amount').value);
@@ -397,45 +348,48 @@ async function saveAll() {
     bb.manual_expires_at = document.getElementById('manual_expires_at').value;
   }
   try {
-    var r2 = await fetch('/api/config', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bb)});
-    var d2 = await r2.json();
+    const r2 = await fetch('/api/config', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bb)});
+    if (!r2.ok) { notify('❌', i18n.t('val_billing_failed')); return; }
+    const d2 = await r2.json();
     if (d2.ok) { dirty=false; updateButtonStates(); notify('✅', i18n.t('notify_saved')); }
     else { notify('❌', i18n.t('val_billing_failed')); }
   } catch(e) { notify('❌', i18n.t('val_network_error')); }
 }
 
 async function testAndSave() {
-  var v = validate();
-  if (!v.valid) { notify('⚠️', i18n.t('val_fix_errors')+':<br><br>'+v.errors.map(function(e){return '· '+e;}).join('<br>')); return; }
-  var btn = document.getElementById('testBtn');
-  var result = document.getElementById('testResult');
+  const v = validate();
+  if (!v.valid) { notify('⚠️', i18n.t('val_fix_errors')+':<br><br>'+v.errors.map(e => '· '+e).join('<br>')); return; }
+  const btn = document.getElementById('testBtn');
+  const result = document.getElementById('testResult');
   btn.disabled = true; btn.textContent = '⏳ ' + i18n.t('btn_saving'); result.innerHTML = '';
-  var modelsText = document.getElementById('modelList').value.trim();
-  var newModels = modelsText.split('\n').map(function(s){return s.trim();}).filter(function(s){return s;});
-  var keyJson = document.getElementById('keyJson').value.trim();
+  const modelsText = document.getElementById('modelList').value.trim();
+  const newModels = modelsText.split('\n').map(s => s.trim()).filter(s => s);
+  const keyJson = document.getElementById('keyJson').value.trim();
+  const keyChanged = keyJson !== initialKeyContent;
   try {
-    var body = {
+    const body = {
       models: newModels,
       vertex_project: document.getElementById('vertexProject').value.trim(),
       vertex_location: document.getElementById('vertexLocation').value.trim(),
       vertex_model: document.getElementById('vertexModel').value.trim(),
     };
-    if (keyJson) body.vertex_key_json = keyJson;
-    var sr = await fetch('/api/settings', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    var sd = await sr.json();
-    if (!sd.ok) { var em = sd.detail?(sd.detail.message||sd.detail.error||JSON.stringify(sd.detail)):'Unknown'; result.innerHTML = '<span style="color:var(--red)">❌ '+i18n.t('test_fail_save')+': '+escHtml(em)+'</span>'; updateButtonStates(); btn.textContent = '🔍 '+i18n.t('btn_test'); return; }
+    if (keyChanged && keyJson) body.vertex_key_json = keyJson;
+    const sr = await fetch('/api/settings', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if (!sr.ok) { result.innerHTML = '<span style="color:var(--red)">❌ '+escHtml(i18n.t('test_fail_save'))+'</span>'; updateButtonStates(); btn.textContent = '🔍 '+i18n.t('btn_test'); return; }
+    const sd = await sr.json();
+    if (!sd.ok) { const em = sd.detail?(sd.detail.message||sd.detail.error||JSON.stringify(sd.detail)):'Unknown'; result.innerHTML = '<span style="color:var(--red)">❌ '+escHtml(i18n.t('test_fail_save'))+': '+escHtml(em)+'</span>'; updateButtonStates(); btn.textContent = '🔍 '+i18n.t('btn_test'); return; }
     initialModels = newModels;
-    if (keyJson) { hasKey = true; document.getElementById('keyJson').value = ''; }
+    if (keyChanged && keyJson) { hasKey = true; document.getElementById('keyJson').value = ''; initialKeyContent = ''; }
     btn.textContent = '⏳ ' + i18n.t('btn_testing');
-    var tr = await fetch('/api/test', {method:'POST'});
+    const tr = await fetch('/api/test', {method:'POST'});
     if (tr.ok) {
-      var td = await tr.json();
-      result.innerHTML = '<span style="color:var(--green)">✅ '+i18n.t('test_ok')+'</span> &nbsp;<span style="color:var(--muted)">'+escHtml(td.model)+': "'+escHtml(td.response)+'"</span>';
+      const td = await tr.json();
+      result.innerHTML = '<span style="color:var(--green)">✅ '+escHtml(i18n.t('test_ok'))+'</span> &nbsp;<span style="color:var(--muted)">'+escHtml(td.model)+': "'+escHtml(td.response)+'"</span>';
     } else {
-      var te = await tr.json();
-      result.innerHTML = '<span style="color:var(--red)">❌ '+i18n.t('test_fail_conn')+'</span> &nbsp;<span style="color:var(--muted)">'+escHtml(te.error||te.detail||'Unknown')+'</span>';
+      const te = await tr.json().catch(() => ({}));
+      result.innerHTML = '<span style="color:var(--red)">❌ '+escHtml(i18n.t('test_fail_conn'))+'</span> &nbsp;<span style="color:var(--muted)">'+escHtml(te.error||te.detail||'Unknown')+'</span>';
     }
-  } catch(e) { result.innerHTML = '<span style="color:var(--red)">❌ '+i18n.t('test_fail_net')+'</span>'; }
+  } catch(e) { result.innerHTML = '<span style="color:var(--red)">❌ '+escHtml(i18n.t('test_fail_net'))+'</span>'; }
   dirty = false; updateButtonStates(); btn.textContent = '🔍 '+i18n.t('btn_test');
 }
 
@@ -443,68 +397,6 @@ async function resetNow() {
   if (!confirm(i18n.t('common_confirm_reset'))) return;
   try { await fetch('/api/reset',{method:'POST'}); notify('✅', i18n.t('notify_reset')); await loadBilling(); }
   catch(e) { notify('❌', i18n.t('val_network_error')); }
-}
-
-function notify(icon, msg) {
-  document.getElementById('notifyIcon').textContent = icon;
-  document.getElementById('notifyMsg').innerHTML = msg;
-  document.getElementById('notifyModal').classList.add('show');
-}
-function closeNotify(e) {
-  if (e && e.target !== document.getElementById('notifyModal')) return;
-  document.getElementById('notifyModal').classList.remove('show');
-}
-function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-document.addEventListener('keydown', function(e) { if (e.key==='Escape') { closeNotify(); closeHelp(); } });
-
-function openHelp(title, bodyHtml) {
-  document.getElementById('helpTitle').textContent = title;
-  document.getElementById('helpBody').innerHTML = bodyHtml;
-  document.getElementById('helpModal').classList.add('show');
-}
-function closeHelp(e) {
-  if (e && e.target !== document.getElementById('helpModal')) return;
-  document.getElementById('helpModal').classList.remove('show');
-}
-
-function showBalanceHelp() {
-  openHelp(i18n.t('balance_help_title'),
-    '<ol>' +
-    '<li>' + i18n.t('balance_help_step1') + ' <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">Google Cloud Console → Billing</a></li>' +
-    '<li>' + i18n.t('balance_help_step2') + '</li>' +
-    '<li>' + i18n.t('balance_help_step3') + '</li>' +
-    '<li>' + i18n.t('balance_help_step4') + '</li>' +
-    '</ol>' +
-    '<p style="margin-top:10px;">💡 <strong>' + i18n.t('balance_help_tip_label') + '</strong> ' + i18n.t('balance_help_tip') + '</p>'
-  );
-}
-
-function showAgentHelp() {
-  openHelp(i18n.t('agent_help_title'),
-    '<p>' + i18n.t('agent_help_desc') + '</p>' +
-    '<p style="margin-top:8px;"><strong>' + i18n.t('agent_help_endpoint') + ':</strong> <code>POST /v1/chat/completions</code></p>' +
-    '<p style="margin-top:14px;"><strong>' + i18n.t('agent_help_hermes') + '</strong></p>' +
-    '<ol>' +
-    '<li>' + i18n.t('agent_help_step1') + '</li>' +
-    '<li>' + i18n.t('agent_help_step2') + '</li>' +
-    '</ol>' +
-    '<pre><code>' + i18n.t('agent_help_config') + '</code></pre>' +
-    '<p style="margin-top:4px;">3. ' + i18n.t('agent_help_step3') + '</p>' +
-    '<p style="margin-top:10px;">💡 <strong>' + i18n.t('agent_help_note_label') + '</strong> ' + i18n.t('agent_help_note') + '</p>' +
-    '<hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">' +
-    '<p><strong>' + i18n.t('agent_help_skill_title') + '</strong></p>' +
-    '<p style="margin-top:4px;">' + i18n.t('agent_help_skill_desc') + '</p>' +
-    '<p style="margin-top:12px;"><strong>' + i18n.t('agent_help_skill_install') + '</strong></p>' +
-    '<p style="margin-top:4px;">' + i18n.t('agent_help_skill_install_desc') + '</p>' +
-    '<pre><code>' + i18n.t('agent_help_skill_install_claude') + ':  ~/.claude/skills/vertex-monitor/SKILL.md\n' + i18n.t('agent_help_skill_install_hermes') + ':    ~/.hermes/skills/vertex-monitor/SKILL.md\n' + i18n.t('agent_help_skill_install_generic') + ':  &lt;project&gt;/.agents/skills/vertex-monitor/SKILL.md</code></pre>' +
-    '<p style="margin-top:12px;"><strong>' + i18n.t('agent_help_skill_usage') + '</strong></p>' +
-    '<p style="margin-top:4px;">' + i18n.t('agent_help_skill_usage_desc') + '</p>' +
-    '<ul style="margin-top:6px;padding-left:20px;font-size:13px;line-height:2;">' +
-    '<li>' + i18n.t('agent_help_skill_usage_ex1') + '</li>' +
-    '<li>' + i18n.t('agent_help_skill_usage_ex2') + '</li>' +
-    '<li>' + i18n.t('agent_help_skill_usage_ex3') + '</li>' +
-    '</ul>'
-  );
 }
 </script>
 </body>
