@@ -2,7 +2,7 @@
 
 English | [中文文档](README.zh-CN.md)
 
-Google Vertex AI Gemini 模型的轻量级**预算代理** —— 实时追踪消费、强制限额，通过简洁的 Web UI 管理一切。
+Google Vertex AI 模型（Gemini、Claude 等）的轻量级**预算代理** —— 实时追踪消费、强制限额，通过简洁的 Web UI 管理一切。
 
 > 🎯 专为 Google AI Pro 订阅用户打造，每月有 Vertex AI 额度，需要**确保绝不超支**。
 
@@ -224,6 +224,10 @@ custom_providers:
 
 ## 支持模型
 
+Vertex Monitor 支持Vertex AI 平台上的所有模型，包括 Gemini、Claude 及其他第三方模型。只需在设置页的**允许的模型列表**中添加模型标识符即可。
+
+### Gemini
+
 | 模型 | 上下文长度 | 状态 |
 |------|-----------|------|
 | `gemini-3.5-flash` | 1,048,576 | 推荐 |
@@ -239,6 +243,19 @@ custom_providers:
 | `gemini-2.0-flash-lite` | 1,048,576 | 旧版 |
 | `gemini-1.5-pro` | 2,097,152 | 旧版 |
 | `gemini-1.5-flash` | 1,048,576 | 旧版 |
+
+### Claude（via Vertex AI）
+
+| 模型 | 上下文长度 | 状态 |
+|------|-----------|------|
+| `claude-sonnet-4@20250514` | 200,000 | 推荐 |
+| `claude-3-5-sonnet-v2@20241022` | 200,000 | 稳定 |
+| `claude-3-5-haiku@20241022` | 200,000 | 稳定 |
+| `claude-3-opus@20240229` | 200,000 | 旧版 |
+| `claude-3-sonnet@20240229` | 200,000 | 旧版 |
+| `claude-3-haiku@20240307` | 200,000 | 旧版 |
+
+> 💡 以上为常用模型。Vertex AI 还提供 Meta、Mistral 等厂商的模型 —— 任何 [liteLLM `vertex_ai/` 前缀](https://docs.litellm.ai/docs/providers/vertex) 支持的模型标识符均可使用。
 
 ---
 

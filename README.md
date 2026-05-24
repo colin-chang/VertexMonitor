@@ -2,7 +2,7 @@
 
 [中文文档](README.zh-CN.md) | English
 
-A lightweight **budget proxy** for Google Vertex AI Gemini models — track spending in real time, enforce hard limits, and manage everything from a clean Web UI.
+A lightweight **budget proxy** for Google Vertex AI models (Gemini, Claude, and more) — track spending in real time, enforce hard limits, and manage everything from a clean Web UI.
 
 > 🎯 Built for Google AI Pro subscribers who get monthly Vertex AI credits and need to **make sure they never go over budget**.
 
@@ -224,6 +224,10 @@ Supports both `stream: true` (SSE) and `stream: false` (JSON) modes.
 
 ## Supported Models
 
+Vertex Monitor supports all models available on the Vertex AI platform, including Gemini, Claude, and other third-party models. Simply add the model identifier to the **Allowed Models** list in Settings.
+
+### Gemini
+
 | Model | Context Length | Status |
 |-------|---------------|--------|
 | `gemini-3.5-flash` | 1,048,576 | Recommended |
@@ -239,6 +243,19 @@ Supports both `stream: true` (SSE) and `stream: false` (JSON) modes.
 | `gemini-2.0-flash-lite` | 1,048,576 | Legacy |
 | `gemini-1.5-pro` | 2,097,152 | Legacy |
 | `gemini-1.5-flash` | 1,048,576 | Legacy |
+
+### Claude (via Vertex AI)
+
+| Model | Context Length | Status |
+|-------|---------------|--------|
+| `claude-sonnet-4@20250514` | 200,000 | Recommended |
+| `claude-3-5-sonnet-v2@20241022` | 200,000 | Stable |
+| `claude-3-5-haiku@20241022` | 200,000 | Stable |
+| `claude-3-opus@20240229` | 200,000 | Legacy |
+| `claude-3-sonnet@20240229` | 200,000 | Legacy |
+| `claude-3-haiku@20240307` | 200,000 | Legacy |
+
+> 💡 The above are commonly used models. Vertex AI also offers models from Meta, Mistral, etc. — any model identifier supported by [liteLLM's `vertex_ai/` prefix](https://docs.litellm.ai/docs/providers/vertex) can be used.
 
 ---
 
