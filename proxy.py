@@ -21,31 +21,58 @@ from fastapi.staticfiles import StaticFiles
 from store import load_store, save_store, record_call
 
 # ── 配置加载 ──────────────────────────────────────────────
-CONFIG_PATH = Path(__file__).parent / "config.json"
+_data_dir = Path(__file__).parent / "data"
+_data_dir.mkdir(parents=True, exist_ok=True)
+
+SETTINGS_PATH = _data_dir / "settings.json"
+_LEGACY_CONFIG_PATH = Path(__file__).parent / "config.json"
+
+_DEFAULT_SETTINGS = {
+    "vertex_project": "ai-project-384207",
+    "vertex_location": "global",
+    "vertex_model": "gemini-3.1-flash-lite",
+    "models": [
+        "gemini-3.1-flash-lite",
+        "gemini-3.5-flash",
+        "gemini-3.1-pro-preview",
+    ],
+}
 
 
 def _load_config() -> dict:
-    if CONFIG_PATH.exists():
-        return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
-    return {}
+    # 迁移：首次启动时将旧 config.json 合并到 data/settings.json
+    if not SETTINGS_PATH.exists() and _LEGACY_CONFIG_PATH.exists():
+        try:
+            legacy = json.loads(_LEGACY_CONFIG_PATH.read_text(encoding="utf-8"))
+            merged = {**_DEFAULT_SETTINGS, **legacy}
+            SETTINGS_PATH.write_text(
+                json.dumps(merged, indent=4, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+        except Exception:
+            pass
+    if SETTINGS_PATH.exists():
+        return json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+    return dict(_DEFAULT_SETTINGS)
+
+
+def _save_config(cfg: dict):
+    SETTINGS_PATH.write_text(
+        json.dumps(cfg, indent=4, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
 
 _config = _load_config()
 
-VERTEX_PROJECT = _config.get("vertex_project", "ai-project-384207")
-VERTEX_LOCATION = _config.get("vertex_location", "global")
-DEFAULT_MODEL = _config.get("vertex_model", "gemini-3.1-flash-lite")
+VERTEX_PROJECT = _config.get("vertex_project", _DEFAULT_SETTINGS["vertex_project"])
+VERTEX_LOCATION = _config.get("vertex_location", _DEFAULT_SETTINGS["vertex_location"])
+DEFAULT_MODEL = _config.get("vertex_model", _DEFAULT_SETTINGS["vertex_model"])
 
-ALLOWED_MODELS: set[str] = set(_config.get("models", [
-    "gemini-3.1-flash-lite",
-    "gemini-3.5-flash",
-    "gemini-3.1-pro-preview",
-]))
+ALLOWED_MODELS: set[str] = set(_config.get("models", _DEFAULT_SETTINGS["models"]))
 
 # 服务账号凭证
 _credentials_filename = _config.get("google_application_credentials", "vertex-key.json")
-_data_dir = Path(__file__).parent / "data"
-_data_dir.mkdir(parents=True, exist_ok=True)
 
 # 优先从数据卷读取（可写），回退到应用目录（Docker 构建时复制）
 _creds_in_data = _data_dir / _credentials_filename
@@ -219,9 +246,10 @@ async def get_settings():
             key_preview = "已配置（无法解析）"
 
     return JSONResponse({
-        "vertex_project": cfg.get("vertex_project", "ai-project-384207"),
-        "vertex_location": cfg.get("vertex_location", "global"),
-        "models": cfg.get("models", []),
+        "vertex_project": cfg.get("vertex_project", _DEFAULT_SETTINGS["vertex_project"]),
+        "vertex_location": cfg.get("vertex_location", _DEFAULT_SETTINGS["vertex_location"]),
+        "vertex_model": cfg.get("vertex_model", _DEFAULT_SETTINGS["vertex_model"]),
+        "models": cfg.get("models", _DEFAULT_SETTINGS["models"]),
         "has_key": has_key,
         "key_preview": key_preview,
         "key_content": key_content,
@@ -231,11 +259,17 @@ async def get_settings():
 
 @app.post("/api/settings")
 async def update_settings(request: Request):
-    """更新设置：模型列表 + Vertex Key JSON。"""
+    """更新设置：Vertex 配置 + 模型列表 + Vertex Key JSON。"""
     body = await request.json()
     cfg = _load_config()
 
     modified = False
+
+    # 更新 Vertex 项目配置
+    for key in ("vertex_project", "vertex_location", "vertex_model"):
+        if key in body and body[key]:
+            cfg[key] = body[key]
+            modified = True
 
     # 更新模型列表
     if "models" in body and isinstance(body["models"], list):
@@ -270,15 +304,56 @@ async def update_settings(request: Request):
         modified = True
 
     if modified:
-        CONFIG_PATH.write_text(json.dumps(cfg, indent=4, ensure_ascii=False) + "\n", encoding="utf-8")
+        _save_config(cfg)
         # 重新加载全局变量
-        global _config, ALLOWED_MODELS, VERTEX_PROJECT, VERTEX_LOCATION
+        global _config, ALLOWED_MODELS, VERTEX_PROJECT, VERTEX_LOCATION, DEFAULT_MODEL
         _config = cfg
-        ALLOWED_MODELS = set(cfg.get("models", []))
-        VERTEX_PROJECT = cfg.get("vertex_project", "ai-project-384207")
-        VERTEX_LOCATION = cfg.get("vertex_location", "global")
+        ALLOWED_MODELS = set(cfg.get("models", _DEFAULT_SETTINGS["models"]))
+        VERTEX_PROJECT = cfg.get("vertex_project", _DEFAULT_SETTINGS["vertex_project"])
+        VERTEX_LOCATION = cfg.get("vertex_location", _DEFAULT_SETTINGS["vertex_location"])
+        DEFAULT_MODEL = cfg.get("vertex_model", _DEFAULT_SETTINGS["vertex_model"])
 
     return JSONResponse({"ok": True, "has_key": body.get("vertex_key_json", "") != ""})
+
+
+# ── Skill API（供 AI Agent 调用）─────────────────────────────────
+
+@app.get("/skill/balance")
+async def skill_balance():
+    """Skill: 查询当前余额与预算状态，供 AI Agent 作为工具调用。"""
+    store = load_store()
+    store.check_and_reset()
+    cur = store.summary()["current"]
+    status = "exhausted" if cur["exhausted"] or cur["expired"] else "warning" if cur["remaining"] < cur["balance"] * 0.2 else "healthy"
+    status_emoji = {"healthy": "🟢", "warning": "🟡", "exhausted": "🔴"}.get(status, "🟢")
+    message = (
+        f"{status_emoji} Budget status: {status}. "
+        f"Remaining ${cur['remaining']:.4f} of ${cur['balance']:.2f} "
+        f"(spent ${cur['spent']:.6f})."
+    )
+    if cur["expired"]:
+        message = f"🔴 Budget expired at {cur['expires_at']}."
+    elif cur["exhausted"]:
+        message = f"🔴 Budget exhausted. Spent ${cur['spent']:.6f} of ${cur['balance']:.2f}."
+    return JSONResponse({
+        "status": status,
+        "balance": cur["balance"],
+        "spent": cur["spent"],
+        "remaining": cur["remaining"],
+        "expires_at": cur["expires_at"],
+        "mode": store.billing.mode,
+        "message": message,
+    })
+
+
+@app.get("/skill/models")
+async def skill_models():
+    """Skill: 查询当前允许的模型列表，供 AI Agent 作为工具调用。"""
+    return JSONResponse({
+        "models": sorted(ALLOWED_MODELS),
+        "default_model": DEFAULT_MODEL,
+        "count": len(ALLOWED_MODELS),
+    })
 
 @app.post("/v1/chat/completions")
 async def chat_completions(request: Request):

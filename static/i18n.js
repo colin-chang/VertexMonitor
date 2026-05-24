@@ -68,6 +68,24 @@
       key_help_step8: 'Download the file, open it in a text editor, copy all content and paste above',
       key_help_security: 'Security notice: The key is stored only inside the local Docker container and is never uploaded to external services.',
 
+      // Settings — Vertex Config
+      vertex_config_title: 'Vertex AI Configuration',
+      vertex_project_label: 'GCP Project ID',
+      vertex_project_hint: 'The Google Cloud project ID for Vertex AI (e.g. ai-project-384207)',
+      vertex_location_label: 'Vertex Location',
+      vertex_location_hint: 'Region for Vertex AI API (e.g. global, us-central1)',
+      vertex_model_label: 'Default Model',
+      vertex_model_hint: 'The default model used when no model is specified in the request',
+
+      // Settings — Vertex Config
+      vertex_config_title: 'Vertex AI 配置',
+      vertex_project_label: 'GCP 项目 ID',
+      vertex_project_hint: 'Vertex AI 所用的 Google Cloud 项目 ID（如 ai-project-384207）',
+      vertex_location_label: 'Vertex 区域',
+      vertex_location_hint: 'Vertex AI API 区域（如 global、us-central1）',
+      vertex_model_label: '默认模型',
+      vertex_model_hint: '请求中未指定模型时使用的默认模型',
+
       // Settings — Models
       models_title: 'Allowed Models',
       models_label: 'One model per line',
@@ -111,6 +129,42 @@
       // Settings — Notifications
       notify_saved: 'All settings saved',
       notify_reset: 'Period consumption reset',
+
+      // Nav — Agent
+      nav_agent: 'Agent',
+
+      // Balance Help
+      balance_help_title: 'How to Check GCP Billing Balance',
+      balance_help_step1: 'Open',
+      balance_help_step2: 'Select the billing account linked to your project',
+      balance_help_step3: 'On the Overview page, view your current balance and credits',
+      balance_help_step4: 'For details, go to Reports → Cost breakdown by service',
+      balance_help_tip_label: 'Tip:',
+      balance_help_tip: 'The balance here refers to your GCP billing account\'s remaining credits. Enter the current balance into the field above to enable budget tracking.',
+
+      // Agent Help
+      agent_help_title: 'Integrate as AI Agent Tool',
+      agent_help_desc: 'VertexMonitor provides an <strong>OpenAI-compatible API proxy</strong> that can be used as a backend for any AI Agent framework.',
+      agent_help_endpoint: 'Endpoint',
+      agent_help_hermes: 'Example: Hermes Integration',
+      agent_help_step1: 'Ensure VertexMonitor is running (default: <code>http://localhost:8899</code>)',
+      agent_help_step2: 'In Hermes configuration, add a custom provider:',
+      agent_help_config: 'custom_providers:\n  - name: vertex\n    base_url: http://localhost:8899/v1\n    api_key: noop\n    model: gemini-3.1-flash-lite\n    models:\n      gemini-3.1-flash-lite:\n        context_length: 1048576\n      gemini-3.5-flash:\n        context_length: 1048576\n      gemini-3.1-pro-preview:\n        context_length: 2097152',
+      agent_help_step3: 'Select the <code>vertex</code> provider in Hermes for conversations',
+      agent_help_note_label: 'Note:',
+      agent_help_note: 'The <code>api_key</code> can be any non-empty string — VertexMonitor authenticates via GCP service account, not API keys. Only models in the allowed list can be used.',
+      agent_help_skill_title: 'Installable Skill',
+      agent_help_skill_desc: 'The project provides a <code>SKILL.md</code> (Agent Skills Open Standard) that defines a <code>vertex-monitor</code> skill with two tools: <code>query_balance</code> and <code>query_models</code>.',
+      agent_help_skill_install: 'How to Install',
+      agent_help_skill_install_desc: 'Copy the <code>SKILL.md</code> from the project root to your Agent\'s skill directory:',
+      agent_help_skill_install_claude: 'Claude Code',
+      agent_help_skill_install_hermes: 'Hermes',
+      agent_help_skill_install_generic: 'Other Agents',
+      agent_help_skill_usage: 'How to Use',
+      agent_help_skill_usage_desc: 'After installation, the Agent will automatically invoke the corresponding tool when you ask:',
+      agent_help_skill_usage_ex1: '"Query Vertex balance" or "How much Vertex credit left?" → returns remaining budget & spending status',
+      agent_help_skill_usage_ex2: '"Query Vertex models" or "What models are available?" → returns available model list',
+      agent_help_skill_usage_ex3: '"Vertex usage status" → returns budget health, spent amount & expiry',
 
       // Common
       common_or: 'or',
@@ -210,6 +264,39 @@
 
       notify_saved: '所有设置已保存',
       notify_reset: '本期消费已重置',
+
+      nav_agent: 'Agent',
+
+      balance_help_title: '如何查询 GCP 余额',
+      balance_help_step1: '打开',
+      balance_help_step2: '选择与你的项目关联的结算账号',
+      balance_help_step3: '在概览页面，查看当前余额和赠金',
+      balance_help_step4: '如需更多详情，前往 报告 → 按服务细分的费用',
+      balance_help_tip_label: '提示：',
+      balance_help_tip: '此处的余额是指 GCP 结算账号的剩余额度/赠金。将当前余额填入上方字段即可启用预算追踪。',
+
+      agent_help_title: '接入 AI Agent 工具',
+      agent_help_desc: 'VertexMonitor 提供了 <strong>OpenAI 兼容的 API 代理</strong>，可作为任何 AI Agent 框架的后端使用。',
+      agent_help_endpoint: '接口地址',
+      agent_help_hermes: '示例：Hermes 接入',
+      agent_help_step1: '确保 VertexMonitor 正在运行（默认：<code>http://localhost:8899</code>）',
+      agent_help_step2: '在 Hermes 配置中，添加自定义提供者：',
+      agent_help_config: 'custom_providers:\n  - name: vertex\n    base_url: http://localhost:8899/v1\n    api_key: noop\n    model: gemini-3.1-flash-lite\n    models:\n      gemini-3.1-flash-lite:\n        context_length: 1048576\n      gemini-3.5-flash:\n        context_length: 1048576\n      gemini-3.1-pro-preview:\n        context_length: 2097152',
+      agent_help_step3: '在 Hermes 中选择 <code>vertex</code> 提供者进行对话',
+      agent_help_note_label: '注意：',
+      agent_help_note: '<code>api_key</code> 可以填写任意非空字符串 — VertexMonitor 通过 GCP 服务账号认证，而非 API Key。仅允许列表中的模型可被调用。',
+      agent_help_skill_title: '可安装的 Skill',
+      agent_help_skill_desc: '项目根目录提供了 <code>SKILL.md</code>（Agent Skills 开放标准），定义了 <code>vertex-monitor</code> Skill，包含 <code>query_balance</code> 和 <code>query_models</code> 两个工具。',
+      agent_help_skill_install: '如何安装',
+      agent_help_skill_install_desc: '将项目根目录的 <code>SKILL.md</code> 复制到 Agent 的 skill 目录：',
+      agent_help_skill_install_claude: 'Claude Code',
+      agent_help_skill_install_hermes: 'Hermes',
+      agent_help_skill_install_generic: '其他 Agent',
+      agent_help_skill_usage: '如何使用',
+      agent_help_skill_usage_desc: '安装完成后，直接对 Agent 说以下内容，Agent 会自动调用对应工具：',
+      agent_help_skill_usage_ex1: '"查询 Vertex 余额" 或 "Vertex 还剩多少额度？" → 返回剩余预算与消费状态',
+      agent_help_skill_usage_ex2: '"查询 Vertex 可用模型" 或 "有哪些模型？" → 返回可用模型列表',
+      agent_help_skill_usage_ex3: '"Vertex 用量状态" → 返回预算健康度、已消费金额与到期时间',
 
       common_or: '或',
       common_confirm_reset: '确认立即重置本期消费？已有的消费记录不会被删除，但本期 spent 归零。',

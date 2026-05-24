@@ -93,6 +93,26 @@
   #testResult { font-size: 13px; line-height: 1.5; }
   .hint { font-size: 12px; color: var(--yellow); display: none; }
 
+  .help-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--border); color: var(--muted);
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    margin-left: 4px; vertical-align: middle; transition: all 0.15s;
+  }
+  .help-icon:hover { background: var(--accent); color: #fff; }
+
+  .content-modal .modal { max-width: 560px; text-align: left; }
+  .content-modal .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
+  .content-modal .modal-body { font-size: 13px; color: var(--muted); line-height: 1.7; max-height: 60vh; overflow-y: auto; }
+  .content-modal .modal-body strong { color: var(--text); }
+  .content-modal .modal-body code { background: var(--bg); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--accent); }
+  .content-modal .modal-body pre { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; overflow-x: auto; margin: 8px 0; }
+  .content-modal .modal-body pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+  .content-modal .modal-body ol, .content-modal .modal-body ul { padding-left: 20px; margin: 6px 0; }
+  .content-modal .modal-body li { margin-bottom: 4px; }
+  .content-modal .modal-body a { color: var(--accent); }
+
   .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; }
   .modal-overlay.show { display: flex; }
   .modal { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 28px; max-width: 400px; width: 90%; text-align: center; }
@@ -112,6 +132,7 @@
     <div class="nav-links">
       <a href="/">📊 <span data-i18n="nav_dashboard">Dashboard</span></a>
       <a href="/settings" class="active">🔧 <span data-i18n="nav_settings">Settings</span></a>
+      <a href="javascript:void(0)" onclick="showAgentHelp()">🤖 <span data-i18n="nav_agent">Agent</span></a>
       <select class="lang-select" onchange="i18n.setLang(this.value)">
         <option value="en">EN</option>
         <option value="zh-CN">中文</option>
@@ -144,6 +165,28 @@
       </ol>
       <p style="margin-top:8px;font-size:12px;">⚠️ <span data-i18n="key_help_security">Security notice: The key is stored only inside the local Docker container and is never uploaded to external services.</span></p>
     </details>
+  </div>
+
+  <!-- Vertex Configuration -->
+  <div class="card">
+    <h2>☁️ <span data-i18n="vertex_config_title">Vertex AI Configuration</span></h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label data-i18n="vertex_project_label">GCP Project ID</label>
+        <input type="text" id="vertexProject" placeholder="ai-project-384207" oninput="onDirty()">
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;" data-i18n="vertex_project_hint">The Google Cloud project ID for Vertex AI</div>
+      </div>
+      <div class="form-group">
+        <label data-i18n="vertex_location_label">Vertex Location</label>
+        <input type="text" id="vertexLocation" placeholder="global" oninput="onDirty()">
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;" data-i18n="vertex_location_hint">Region for Vertex AI API</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label data-i18n="vertex_model_label">Default Model</label>
+      <input type="text" id="vertexModel" placeholder="gemini-3.1-flash-lite" oninput="onDirty()">
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;" data-i18n="vertex_model_hint">The default model used when no model is specified</div>
+    </div>
   </div>
 
   <!-- Models -->
@@ -182,7 +225,7 @@
     <div id="panelManual" style="display:none">
       <div class="form-row">
         <div class="form-group">
-          <label data-i18n="billing_balance">Balance ($)</label>
+          <label><span data-i18n="billing_balance">Balance ($)</span> <span class="help-icon" onclick="showBalanceHelp()">?</span></label>
           <input type="number" id="manual_balance" step="0.01" min="0" value="10.00" oninput="onDirty()">
         </div>
         <div class="form-group">
@@ -211,6 +254,16 @@
     <div class="icon" id="notifyIcon"></div>
     <div class="msg" id="notifyMsg"></div>
     <button class="btn btn-primary" onclick="closeNotify()">OK</button>
+  </div>
+</div>
+
+<div class="modal-overlay content-modal" id="helpModal" onclick="closeHelp(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="helpTitle"></div>
+    <div class="modal-body" id="helpBody"></div>
+    <div style="text-align:center;margin-top:16px;">
+      <button class="btn btn-primary" onclick="closeHelp()">OK</button>
+    </div>
   </div>
 </div>
 
@@ -257,6 +310,9 @@ async function loadSettings() {
     if (d.key_content) document.getElementById('keyJson').value = d.key_content;
     initialModels = d.models || [];
     document.getElementById('modelList').value = initialModels.join('\n');
+    document.getElementById('vertexProject').value = d.vertex_project || '';
+    document.getElementById('vertexLocation').value = d.vertex_location || '';
+    document.getElementById('vertexModel').value = d.vertex_model || '';
     initialKeyLoaded = true;
     dirty = false;
     updateButtonStates();
@@ -318,7 +374,12 @@ async function saveAll() {
   var changed = JSON.stringify(newModels)!==JSON.stringify(initialModels) || keyJson.length>0;
   if (changed) {
     try {
-      var body = {models:newModels};
+      var body = {
+        models: newModels,
+        vertex_project: document.getElementById('vertexProject').value.trim(),
+        vertex_location: document.getElementById('vertexLocation').value.trim(),
+        vertex_model: document.getElementById('vertexModel').value.trim(),
+      };
       if (keyJson) body.vertex_key_json = keyJson;
       var r = await fetch('/api/settings', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       var d = await r.json();
@@ -353,7 +414,12 @@ async function testAndSave() {
   var newModels = modelsText.split('\n').map(function(s){return s.trim();}).filter(function(s){return s;});
   var keyJson = document.getElementById('keyJson').value.trim();
   try {
-    var body = {models:newModels};
+    var body = {
+      models: newModels,
+      vertex_project: document.getElementById('vertexProject').value.trim(),
+      vertex_location: document.getElementById('vertexLocation').value.trim(),
+      vertex_model: document.getElementById('vertexModel').value.trim(),
+    };
     if (keyJson) body.vertex_key_json = keyJson;
     var sr = await fetch('/api/settings', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     var sd = await sr.json();
@@ -389,7 +455,57 @@ function closeNotify(e) {
   document.getElementById('notifyModal').classList.remove('show');
 }
 function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-document.addEventListener('keydown', function(e) { if (e.key==='Escape') closeNotify(); });
+document.addEventListener('keydown', function(e) { if (e.key==='Escape') { closeNotify(); closeHelp(); } });
+
+function openHelp(title, bodyHtml) {
+  document.getElementById('helpTitle').textContent = title;
+  document.getElementById('helpBody').innerHTML = bodyHtml;
+  document.getElementById('helpModal').classList.add('show');
+}
+function closeHelp(e) {
+  if (e && e.target !== document.getElementById('helpModal')) return;
+  document.getElementById('helpModal').classList.remove('show');
+}
+
+function showBalanceHelp() {
+  openHelp(i18n.t('balance_help_title'),
+    '<ol>' +
+    '<li>' + i18n.t('balance_help_step1') + ' <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">Google Cloud Console → Billing</a></li>' +
+    '<li>' + i18n.t('balance_help_step2') + '</li>' +
+    '<li>' + i18n.t('balance_help_step3') + '</li>' +
+    '<li>' + i18n.t('balance_help_step4') + '</li>' +
+    '</ol>' +
+    '<p style="margin-top:10px;">💡 <strong>' + i18n.t('balance_help_tip_label') + '</strong> ' + i18n.t('balance_help_tip') + '</p>'
+  );
+}
+
+function showAgentHelp() {
+  openHelp(i18n.t('agent_help_title'),
+    '<p>' + i18n.t('agent_help_desc') + '</p>' +
+    '<p style="margin-top:8px;"><strong>' + i18n.t('agent_help_endpoint') + ':</strong> <code>POST /v1/chat/completions</code></p>' +
+    '<p style="margin-top:14px;"><strong>' + i18n.t('agent_help_hermes') + '</strong></p>' +
+    '<ol>' +
+    '<li>' + i18n.t('agent_help_step1') + '</li>' +
+    '<li>' + i18n.t('agent_help_step2') + '</li>' +
+    '</ol>' +
+    '<pre><code>' + i18n.t('agent_help_config') + '</code></pre>' +
+    '<p style="margin-top:4px;">3. ' + i18n.t('agent_help_step3') + '</p>' +
+    '<p style="margin-top:10px;">💡 <strong>' + i18n.t('agent_help_note_label') + '</strong> ' + i18n.t('agent_help_note') + '</p>' +
+    '<hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">' +
+    '<p><strong>' + i18n.t('agent_help_skill_title') + '</strong></p>' +
+    '<p style="margin-top:4px;">' + i18n.t('agent_help_skill_desc') + '</p>' +
+    '<p style="margin-top:12px;"><strong>' + i18n.t('agent_help_skill_install') + '</strong></p>' +
+    '<p style="margin-top:4px;">' + i18n.t('agent_help_skill_install_desc') + '</p>' +
+    '<pre><code>' + i18n.t('agent_help_skill_install_claude') + ':  ~/.claude/skills/vertex-monitor/SKILL.md\n' + i18n.t('agent_help_skill_install_hermes') + ':    ~/.hermes/skills/vertex-monitor/SKILL.md\n' + i18n.t('agent_help_skill_install_generic') + ':  &lt;project&gt;/.agents/skills/vertex-monitor/SKILL.md</code></pre>' +
+    '<p style="margin-top:12px;"><strong>' + i18n.t('agent_help_skill_usage') + '</strong></p>' +
+    '<p style="margin-top:4px;">' + i18n.t('agent_help_skill_usage_desc') + '</p>' +
+    '<ul style="margin-top:6px;padding-left:20px;font-size:13px;line-height:2;">' +
+    '<li>' + i18n.t('agent_help_skill_usage_ex1') + '</li>' +
+    '<li>' + i18n.t('agent_help_skill_usage_ex2') + '</li>' +
+    '<li>' + i18n.t('agent_help_skill_usage_ex3') + '</li>' +
+    '</ul>'
+  );
+}
 </script>
 </body>
 </html>

@@ -7,7 +7,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制项目文件
-COPY config.json .
 COPY proxy.py .
 COPY store.py .
 COPY static/ static/

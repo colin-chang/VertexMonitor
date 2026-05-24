@@ -6,10 +6,10 @@ services:
     ports:
       - "8899:8899"
     volumes:
-      # 持久化账本数据
+      # 持久化数据（账本、设置、凭证）
       - ./data:/app/data
-      # GCP 服务账号凭证（获取方式见 README）
-      - ./vertex-key.json:/app/vertex-key.json:ro
+      # 静态文件（开发时挂载，修改即时生效）
+      - ./static:/app/static
     environment:
       - HOST=0.0.0.0
       - PORT=8899
